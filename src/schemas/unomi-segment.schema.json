@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unomi Segment",
+  "description": "Apache Unomi segment definition.",
+  "type": "object",
+  "properties": {
+    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "condition": {
+      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "description": "Condition that determines segment membership"
+    }
+  },
+  "required": ["metadata", "condition"],
+  "additionalProperties": true
+}

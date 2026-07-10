@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://unomi-ui/schemas/unomi-action.json",
+  "title": "Unomi Action",
+  "description": "Apache Unomi action definition. Used in rules and event processing.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Action type identifier (e.g. 'setPropertyAction', 'sendEventAction')"
+    },
+    "parameterValues": {
+      "type": "object",
+      "description": "Parameters for the action type",
+      "additionalProperties": true
+    }
+  },
+  "required": ["type"],
+  "additionalProperties": true
+}

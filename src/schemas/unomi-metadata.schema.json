@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://unomi-ui/schemas/unomi-metadata.json",
+  "title": "Unomi Metadata",
+  "description": "Shared metadata block used across Unomi entities (rules, segments, goals, campaigns, scoring).",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "description": "Unique identifier" },
+    "name": { "type": "string", "description": "Display name" },
+    "description": { "type": "string", "description": "Human-readable description" },
+    "scope": { "type": "string", "description": "Scope the entity belongs to" },
+    "tags": { "type": "array", "items": { "type": "string" }, "description": "Tags for categorisation" },
+    "enabled": { "type": "boolean", "description": "Whether the entity is active" },
+    "missingPlugins": { "type": "boolean", "description": "Whether required plugins are missing" },
+    "hidden": { "type": "boolean", "description": "Whether the entity is hidden from the UI" },
+    "readOnly": { "type": "boolean", "description": "Whether the entity is read-only" }
+  },
+  "required": ["id", "name", "scope"]
+}

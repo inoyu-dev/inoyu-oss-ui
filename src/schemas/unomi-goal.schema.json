@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unomi Goal",
+  "description": "Apache Unomi goal definition.",
+  "type": "object",
+  "properties": {
+    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "startEvent": {
+      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "description": "Condition that starts tracking this goal"
+    },
+    "targetEvent": {
+      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "description": "Condition that completes this goal"
+    },
+    "campaignId": {
+      "type": "string",
+      "description": "Optional campaign this goal belongs to"
+    }
+  },
+  "required": ["metadata"],
+  "additionalProperties": true
+}

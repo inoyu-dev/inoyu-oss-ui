@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://unomi-ui/schemas/unomi-condition.json",
+  "title": "Unomi Condition",
+  "description": "Apache Unomi condition definition. Used in segments, rules, goals, campaigns, and scoring.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Condition type identifier (e.g. 'profilePropertyCondition', 'booleanCondition')"
+    },
+    "parameterValues": {
+      "type": "object",
+      "description": "Parameters for the condition type",
+      "properties": {
+        "operator": { "type": "string", "description": "Comparison operator" },
+        "propertyName": { "type": "string", "description": "Property path to evaluate" },
+        "propertyValue": { "description": "Value to compare against" },
+        "propertyValues": { "type": "array", "description": "Multiple values for in/notIn operators" },
+        "subConditions": {
+          "type": "array",
+          "description": "Sub-conditions for boolean compound conditions",
+          "items": { "$ref": "#" }
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "required": ["type"],
+  "additionalProperties": true
+}

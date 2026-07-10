@@ -1,0 +1,17 @@
+node_modules
+.next/
+docs/actions
+docs/rules
+docs/conditions
+# SQLite database files
+/data/*.db
+dist/
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Staging scripts
+scripts/.staging-state
+scripts/.staging-state.json.env.local

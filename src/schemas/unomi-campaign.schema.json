@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unomi Campaign",
+  "description": "Apache Unomi campaign definition.",
+  "type": "object",
+  "properties": {
+    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "startDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Campaign start date"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Campaign end date"
+    },
+    "timezone": { "type": "string", "description": "Campaign timezone" },
+    "entryCondition": {
+      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "description": "Condition to enter the campaign"
+    },
+    "cost": { "type": "number", "description": "Campaign cost" },
+    "currency": { "type": "string", "description": "Cost currency" },
+    "primaryGoal": { "type": "string", "description": "Primary goal ID" }
+  },
+  "required": ["metadata"],
+  "additionalProperties": true
+}

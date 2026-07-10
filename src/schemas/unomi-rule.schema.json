@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Unomi Rule",
+  "description": "Apache Unomi rule definition. Combines conditions with actions.",
+  "type": "object",
+  "properties": {
+    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "condition": {
+      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "description": "Trigger condition for the rule"
+    },
+    "actions": {
+      "type": "array",
+      "description": "Actions to execute when condition is met",
+      "items": { "$ref": "http://unomi-ui/schemas/unomi-action.json" }
+    },
+    "linkedItems": {
+      "type": "array",
+      "description": "Items linked to this rule"
+    },
+    "raiseEventOnlyOnceForProfile": { "type": "boolean" },
+    "raiseEventOnlyOnceForSession": { "type": "boolean" },
+    "priority": { "type": "integer" }
+  },
+  "required": ["metadata", "condition", "actions"],
+  "additionalProperties": true
+}
