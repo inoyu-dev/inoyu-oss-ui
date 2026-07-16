@@ -1,5 +1,5 @@
 import type { AppProps } from 'next/app';
-import { appWithTranslation } from 'next-i18next';
+import { appWithTranslation } from 'next-i18next/pages';
 import { AuthProvider } from '../src/contexts/AuthContext';
 import { LanguageProvider } from '../src/contexts/LanguageContext';
 import { ThemeProvider } from '../src/contexts/ThemeContext';

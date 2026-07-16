@@ -5,6 +5,12 @@ const nextConfig = {
   i18n,
   reactStrictMode: true,
   pageExtensions: ['ts', 'tsx', 'jsx', 'js'],
+  // Next 16 defaults to Turbopack; keep webpack alias for `next build --webpack`.
+  turbopack: {
+    resolveAlias: {
+      '@styles': path.join(__dirname, 'src/styles'),
+    },
+  },
   webpack: (config) => {
     config.resolve.alias['@styles'] = path.join(__dirname, 'src/styles');
     return config;
