@@ -227,7 +227,7 @@ const Sidebar: React.FC = () => {
         <div className="flex items-center justify-center">
           <Image
             src="/inoyu-logo.svg"
-            alt="Inoyu UI Logo"
+            alt="Inoyu OSS UI Logo"
             width={isCollapsed ? 40 : 120}
             height={isCollapsed ? 40 : 60}
             className={`transition-base ${

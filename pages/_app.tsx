@@ -16,7 +16,7 @@ loader.registerPlugins([corePlugin]);
 
 // Resolve app name from plugin config
 const appConfig = registry.getConfig('app');
-const appName = (appConfig.appName as string) || 'Inoyu UI';
+const appName = (appConfig.appName as string) || 'Inoyu OSS UI';
 
 function App({ Component, pageProps }: AppProps) {
   return (

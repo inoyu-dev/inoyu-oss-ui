@@ -1,6 +1,6 @@
 # Property Types UI Components
 
-This directory contains components and utilities for managing and using property types in the Inoyu UI.
+This directory contains components and utilities for managing and using property types in the Inoyu OSS UI.
 
 ## Components
 

@@ -1,5 +1,5 @@
 /**
- * Custom Monaco Editor themes for Unomi UI.
+ * Custom Monaco Editor themes for Inoyu OSS UI.
  *
  * Two themes:
  * - `unomi-light` — Light mode with navy-blue accents
@@ -212,7 +212,7 @@ const UNOMI_DARK: editor.IStandaloneThemeData = {
 // ─── Registration ───────────────────────────────────────────────────────────
 
 /**
- * Register Unomi UI custom themes with a Monaco instance.
+ * Register Inoyu OSS UI custom themes with a Monaco instance.
  * Safe to call multiple times — only registers once.
  *
  * After registration, use theme name `'unomi-light'` or `'unomi-dark'`

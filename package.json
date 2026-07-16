@@ -1,7 +1,7 @@
 {
   "name": "inoyu-oss-ui",
   "version": "1.0.0",
-  "description": "Inoyu UI \u2014 Open-source UI for Apache Unomi Customer Data Platform",
+  "description": "Inoyu OSS UI — Open-source UI for Apache Unomi Customer Data Platform",
   "license": "Apache-2.0",
   "author": "Inoyu",
   "repository": {
