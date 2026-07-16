@@ -1,7 +1,7 @@
 import React, { useEffect, useState, FormEvent } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { useAuth } from '../src/contexts/AuthContext';
 
 const Login: NextPage = () => {

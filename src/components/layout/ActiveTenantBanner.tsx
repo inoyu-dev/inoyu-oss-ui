@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'next-i18next/pages';
 import { Building2, LogOut, Settings2 } from 'lucide-react';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { useAdmin } from '@/hooks/useAdmin';

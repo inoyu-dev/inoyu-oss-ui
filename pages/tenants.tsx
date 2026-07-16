@@ -1,4 +1,4 @@
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { serverSideTranslations } from 'next-i18next/pages/serverSideTranslations';
 import type { GetServerSideProps } from 'next';
 
 import TenantsPage from '@/components/tenants/TenantsPage';
