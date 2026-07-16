@@ -46,7 +46,7 @@ export const defaultOnPremiseFlags: FeatureFlags = {
 /**
  * Get default feature flags based on deployment type
  */
-export function getDefaultFeatureFlags(deploymentType: DeploymentType = 'multi-tenant'): FeatureFlags {
+export function getDefaultFeatureFlags(deploymentType: DeploymentType = 'on-premise'): FeatureFlags {
   if (deploymentType === 'on-premise') {
     return { ...defaultOnPremiseFlags };
   }
@@ -70,4 +70,51 @@ export function mergeFeatureFlags(
     ...defaults,
     ...envOverrides,
   };
+}
+
+/**
+ * Parse an optional boolean env override.
+ * Unset → undefined (keep deployment default).
+ * "true" / "false" → explicit override.
+ */
+export function parseFeatureFlagEnv(value: string | undefined): boolean | undefined {
+  if (value === 'true') {
+    return true;
+  }
+  if (value === 'false') {
+    return false;
+  }
+  return undefined;
+}
+
+/**
+ * Build env overrides from process.env, omitting unset flags so deployment
+ * defaults (e.g. groovyActions=true on-prem) are preserved.
+ */
+export function buildFeatureFlagEnvOverrides(
+  env: Record<string, string | undefined> = process.env
+): Partial<FeatureFlags> {
+  const overrides: Partial<FeatureFlags> = {};
+
+  const groovyActions = parseFeatureFlagEnv(env.FEATURE_GROOVY_ACTIONS);
+  if (groovyActions !== undefined) {
+    overrides.groovyActions = groovyActions;
+  }
+
+  const actionTypeDeployment = parseFeatureFlagEnv(env.FEATURE_ACTION_TYPE_DEPLOYMENT);
+  if (actionTypeDeployment !== undefined) {
+    overrides.actionTypeDeployment = actionTypeDeployment;
+  }
+
+  const conditionTypeDeployment = parseFeatureFlagEnv(env.FEATURE_CONDITION_TYPE_DEPLOYMENT);
+  if (conditionTypeDeployment !== undefined) {
+    overrides.conditionTypeDeployment = conditionTypeDeployment;
+  }
+
+  const advancedSettings = parseFeatureFlagEnv(env.FEATURE_ADVANCED_SETTINGS);
+  if (advancedSettings !== undefined) {
+    overrides.advancedSettings = advancedSettings;
+  }
+
+  return overrides;
 }

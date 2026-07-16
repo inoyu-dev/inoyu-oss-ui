@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Building2, LogOut, Settings2 } from 'lucide-react';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
@@ -13,41 +14,84 @@ interface ActiveTenantInfo {
 
 interface TenantConfigResponse {
   tenantId: string | null;
+  supportsTenants?: boolean;
   tenantAdminEnabled?: boolean;
   activeTenant?: ActiveTenantInfo | null;
 }
 
 const ActiveTenantBanner: React.FC = () => {
   const { t } = useTranslation('common');
+  const router = useRouter();
   const { featureFlags, isLoading: flagsLoading } = useFeatureFlags();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const [activeTenant, setActiveTenant] = useState<ActiveTenantInfo | null>(null);
+  const [supportsTenants, setSupportsTenants] = useState(false);
+  const [tenantAdminEnabled, setTenantAdminEnabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [exiting, setExiting] = useState(false);
+  const redirectedRef = useRef(false);
 
   const loadActiveTenant = useCallback(async () => {
     try {
       const res = await fetch('/api/config/tenant');
       if (!res.ok) {
+        setLoaded(true);
         return;
       }
       const data = (await res.json()) as TenantConfigResponse;
+      setSupportsTenants(data.supportsTenants === true);
+      setTenantAdminEnabled(data.tenantAdminEnabled === true);
+
       if (data.activeTenant) {
         setActiveTenant(data.activeTenant);
-        return;
-      }
-      if (data.tenantId) {
+      } else if (data.tenantId) {
         setActiveTenant({ tenantId: data.tenantId, source: 'default' });
+      } else {
+        setActiveTenant(null);
       }
     } catch {
       // ignore
+    } finally {
+      setLoaded(true);
     }
   }, []);
 
   useEffect(() => {
     if (!flagsLoading && featureFlags.tenantAdmin) {
       void loadActiveTenant();
+    } else if (!flagsLoading) {
+      setLoaded(true);
     }
   }, [featureFlags.tenantAdmin, flagsLoading, loadActiveTenant]);
+
+  // On-prem 3.1+: redirect admins with no tenant to /tenants (once)
+  useEffect(() => {
+    if (!loaded || flagsLoading || adminLoading || redirectedRef.current) {
+      return;
+    }
+    if (!supportsTenants || !tenantAdminEnabled || !featureFlags.tenantAdmin || !isAdmin) {
+      return;
+    }
+    if (activeTenant?.tenantId) {
+      return;
+    }
+    const path = router.pathname;
+    if (path === '/tenants' || path === '/login') {
+      return;
+    }
+    redirectedRef.current = true;
+    void router.replace('/tenants');
+  }, [
+    loaded,
+    flagsLoading,
+    adminLoading,
+    supportsTenants,
+    tenantAdminEnabled,
+    featureFlags.tenantAdmin,
+    isAdmin,
+    activeTenant,
+    router.pathname,
+  ]);
 
   const handleExitContext = async () => {
     try {
@@ -65,6 +109,10 @@ const ActiveTenantBanner: React.FC = () => {
   };
 
   if (flagsLoading || adminLoading || !featureFlags.tenantAdmin || !isAdmin) {
+    return null;
+  }
+
+  if (!supportsTenants || !tenantAdminEnabled) {
     return null;
   }
 

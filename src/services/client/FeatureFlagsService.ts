@@ -3,7 +3,7 @@
  * Client-side service for accessing feature flags
  */
 
-import { FeatureFlags, DeploymentType, defaultMultiTenantFlags } from '@/config/feature-flags';
+import { FeatureFlags, DeploymentType, defaultOnPremiseFlags } from '@/config/feature-flags';
 
 export interface FeatureFlagsResponse {
   deploymentType: DeploymentType;
@@ -24,8 +24,8 @@ export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
     console.error('Error fetching feature flags:', error);
     // Return safe defaults on error
     return {
-      deploymentType: 'multi-tenant',
-      features: { ...defaultMultiTenantFlags },
+      deploymentType: 'on-premise',
+      features: { ...defaultOnPremiseFlags },
     };
   }
 }

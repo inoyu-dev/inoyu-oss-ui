@@ -52,6 +52,7 @@ export const CORE_ROUTES = [
   '/groovy-actions',
   '/scopes',
   '/profiles',
+  '/tenants',
 ] as const;
 
 /**
@@ -161,6 +162,13 @@ export const CORE_NAVIGATION_GROUPS = [
     icon: navIcon(Settings, 'md'),
     defaultExpanded: false,
     items: [
+      {
+        href: '/tenants',
+        icon: navIcon(Users),
+        label: 'Tenant Management',
+        adminOnly: true,
+        featureFlag: 'tenantAdmin' as const,
+      },
       { href: '/settings', icon: navIcon(Settings), label: 'Settings' },
     ],
   },
