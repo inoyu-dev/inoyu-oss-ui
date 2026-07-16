@@ -484,6 +484,15 @@
   "Tenant is not available": "Tenant is not available",
   "Some features may not work correctly. Please check your Unomi V3 configuration.": "Some features may not work correctly. Please check your Unomi V3 configuration and ensure the tenant is properly initialized.",
   "Configured tenant": "Configured tenant",
+  "No active tenant selected. Choose a tenant to manage CDP data.": "No active tenant selected. Choose a tenant to manage CDP data.",
+  "Manage tenants": "Manage tenants",
+  "Active tenant": "Active tenant",
+  "Default tenant": "Default tenant",
+  "Switch tenant": "Switch tenant",
+  "Exit tenant context": "Exit tenant context",
+  "No tenant": "No tenant",
+  "No tenants yet": "No tenants yet",
+  "No tenants exist yet. Sign in as System Admin to create a tenant.": "No tenants exist yet. Sign in as System Admin to create a tenant.",
 
   "Checking permissions...": "Checking permissions..."
 }

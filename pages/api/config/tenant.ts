@@ -1,8 +1,15 @@
 import type { NextApiResponse } from 'next';
 import axios, { type AxiosError } from 'axios';
 import { createHandler } from '@/lib/api-middleware';
-import { getUnomiConfig, getTenantContextFromRequest, isUnomiV3, hasV3Credentials } from '@/lib/unomi-config';
-import { isTenantAdminEnabled } from '@/lib/tenant-admin';
+import {
+  getUnomiConfig,
+  getTenantContextFromRequest,
+  isUnomiV3,
+  hasV3Credentials,
+  supportsTenants,
+  getSessionTenantIdFromToken,
+} from '@/lib/unomi-config';
+import { isTenantAdminEnabled, isTenantAdminUiEnabled } from '@/lib/tenant-admin';
 
 async function getTenantDetails(tenantId: string, config = getUnomiConfig()): Promise<{ exists: boolean; hasApiKeys?: boolean }> {
   try {
@@ -57,33 +64,50 @@ export default createHandler({
   handler: async (req, res: NextApiResponse) => {
     const config = getUnomiConfig(req);
     const isV3 = isUnomiV3();
+    const tenantsSupported = supportsTenants();
     const hasCredentials = hasV3Credentials(req);
     const tenantId = config.tenantId;
-    const tenantAdminEnabled = isTenantAdminEnabled();
-    const adminContext = getTenantContextFromRequest(req);
+    const tenantAdminEnabled = isTenantAdminUiEnabled();
+    const deploymentTenantAdmin = isTenantAdminEnabled();
 
-    const activeTenant = adminContext?.tenantId
-      ? {
-          tenantId: adminContext.tenantId,
-          name: (adminContext as { name?: string }).name,
-          source: 'context' as const,
-        }
-      : tenantId
-        ? {
-            tenantId,
-            source: 'default' as const,
-          }
-        : null;
+    const adminContext = tenantAdminEnabled ? getTenantContextFromRequest(req) : null;
+    const sessionTenantId = getSessionTenantIdFromToken(req);
 
-    if (!isV3) {
+    let activeTenant: {
+      tenantId: string;
+      name?: string;
+      source: 'context' | 'default' | 'session';
+    } | null = null;
+
+    if (adminContext?.tenantId) {
+      activeTenant = {
+        tenantId: adminContext.tenantId,
+        name: adminContext.name,
+        source: 'context',
+      };
+    } else if (sessionTenantId) {
+      activeTenant = {
+        tenantId: sessionTenantId,
+        source: 'session',
+      };
+    } else if (tenantId) {
+      activeTenant = {
+        tenantId,
+        source: 'default',
+      };
+    }
+
+    if (!tenantsSupported) {
       return res.status(200).json({
         tenantId: null,
         version: config.version,
-        isV3: false,
+        isV3,
+        supportsTenants: false,
         hasCredentials: false,
         tenantAvailable: true,
         tenantExists: false,
-        tenantAdminEnabled,
+        tenantAdminEnabled: false,
+        deploymentTenantAdmin,
         activeTenant: null,
       });
     }
@@ -99,15 +123,27 @@ export default createHandler({
       tenantAvailable = tenantExists;
     }
 
+    // On-prem with no tenant yet: not an error when admin UI can create one
+    if (tenantAdminEnabled && !tenantId) {
+      tenantAvailable = true;
+    }
+
+    // SaaS: tenant comes from JWT — missing tenant is not a UNOMI_TENANT_ID config error
+    if (!tenantAdminEnabled && !tenantId) {
+      tenantAvailable = true;
+    }
+
     return res.status(200).json({
       tenantId: tenantId || null,
       version: config.version,
       isV3: true,
+      supportsTenants: true,
       hasCredentials,
       tenantAvailable,
       tenantExists,
       tenantHasApiKeys,
       tenantAdminEnabled,
+      deploymentTenantAdmin,
       activeTenant,
     });
   },

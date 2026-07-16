@@ -34,12 +34,25 @@ The app runs at [http://localhost:3131](http://localhost:3131).
 
 ## Configuration
 
+Defaults live in `src/config/env-defaults.ts` (`.env.example` documents the same values, mostly commented).
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `UNOMI_URL` | `http://localhost:8181` | Unomi server URL |
-| `UNOMI_KEY` | — | Unomi API key |
-| `JWT_SECRET` | — | Secret for session tokens |
-| `DEPLOYMENT_TYPE` | `multi-tenant` | `multi-tenant` or `on-premise` |
+| `UNOMI_URL` / `NEXT_PUBLIC_UNOMI_URL` | `http://localhost:8181` | Unomi server URL |
+| `UNOMI_VERSION` | `3.1` | Tenant UI requires `3.1+` (`3` / `3.0` = no tenant UI) |
+| `UNOMI_USER` / `UNOMI_PASSWORD` | `karaf` / `karaf` | Unomi system credentials |
+| `UNOMI_TENANT_ID` | — | Optional; omit for on-prem tenant admin bootstrap |
+| `JWT_SECRET` | — | Required for sessions (no default) |
+| `DEPLOYMENT_TYPE` | `on-premise` | `on-premise` (managed tenants) or `multi-tenant` (SaaS / JWT) |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | `admin@inoyu.local` / `admin` | System admin login |
+| `PORT` / `NEXT_PUBLIC_BASE_URL` | `3131` / `http://localhost:3131` | App listen URL |
+
+### Tenant modes (Unomi × deployment)
+
+| | SaaS (`multi-tenant`) | On-premise |
+|--|----------------------|------------|
+| **Unomi &lt; 3.1** | No tenant UI | No tenant UI |
+| **Unomi >= 3.1** | Tenant from JWT only; no tenant UI | Create/switch tenants in UI + sidebar |
 
 ## Plugin System
 

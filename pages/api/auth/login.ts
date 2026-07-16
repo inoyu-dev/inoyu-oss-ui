@@ -3,6 +3,8 @@ import { getUnomiConfig } from '@/lib/unomi-config';
 import axios from 'axios';
 import { DecodedToken } from '@/lib/api-auth';
 import { createHandler } from '@/lib/api-middleware';
+import { getTenantUiCapabilities, hasAnyTenants } from '@/lib/tenant-bootstrap';
+import { DEFAULT_ADMIN_EMAIL, DEFAULT_ADMIN_PASSWORD } from '@/config/env-defaults';
 
 interface LoginRequestBody {
   email: string;
@@ -18,8 +20,8 @@ interface LoginRequestBody {
 async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
   // TODO: Replace with actual admin user database check
   // For now, check against environment variables or a hardcoded admin
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@unomi.local';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
+  const adminEmail = process.env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
 
   return email === adminEmail && password === adminPassword;
 }
@@ -75,8 +77,20 @@ async function verifyTenantUserCredentials(
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export default createHandler({
-  methods: ['POST'],
+  methods: ['GET', 'POST'],
   handler: async (req, res) => {
+    // Bootstrap / login options for the login page (no auth required)
+    if (req.method === 'GET') {
+      const tenantsExist = await hasAnyTenants();
+      const caps = getTenantUiCapabilities(tenantsExist);
+      return res.status(200).json({
+        allowTenantLogin: caps.allowTenantLogin,
+        systemAdminOnly: caps.systemAdminOnly,
+        supportsTenants: caps.supportsTenants,
+        showTenantAdminUi: caps.showTenantAdminUi,
+      });
+    }
+
     const { email, password, loginType = 'admin', tenantId } = req.body as LoginRequestBody;
 
     if (!email || !password) {
@@ -96,6 +110,16 @@ export default createHandler({
         };
       }
     } else if (loginType === 'tenant') {
+      // First login / no tenants yet: only system admin may sign in
+      const tenantsExist = await hasAnyTenants();
+      const caps = getTenantUiCapabilities(tenantsExist);
+      if (!caps.allowTenantLogin) {
+        return res.status(403).json({
+          success: false,
+          message: 'No tenants exist yet. Sign in as System Admin to create a tenant.',
+        });
+      }
+
       // Tenant user login
       if (!tenantId) {
         return res.status(400).json({ success: false, message: 'Tenant ID is required for tenant login' });

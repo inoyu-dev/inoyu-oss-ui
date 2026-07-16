@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from 'react';
+import React, { useEffect, useState, FormEvent } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
@@ -11,14 +11,40 @@ const Login: NextPage = () => {
   const [loginType, setLoginType] = useState<'admin' | 'tenant'>('admin');
   const [tenantId, setTenantId] = useState('');
   const [error, setError] = useState('');
+  const [allowTenantLogin, setAllowTenantLogin] = useState(false);
+  const [optionsLoaded, setOptionsLoaded] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    fetch('/api/auth/login')
+      .then(res => res.json())
+      .then(data => {
+        const allow = data.allowTenantLogin === true;
+        setAllowTenantLogin(allow);
+        if (!allow) {
+          setLoginType('admin');
+        }
+      })
+      .catch(() => {
+        // Fail closed: only system admin until we know tenants exist
+        setAllowTenantLogin(false);
+        setLoginType('admin');
+      })
+      .finally(() => setOptionsLoaded(true));
+  }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     try {
-      const success = await login(email, password, loginType, loginType === 'tenant' ? tenantId : undefined);
+      const effectiveType = allowTenantLogin ? loginType : 'admin';
+      const success = await login(
+        email,
+        password,
+        effectiveType,
+        effectiveType === 'tenant' ? tenantId : undefined
+      );
       if (success) {
         router.push('/');
       }
@@ -36,46 +62,53 @@ const Login: NextPage = () => {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             {t('Sign in to your account')}
           </h2>
+          {optionsLoaded && !allowTenantLogin && (
+            <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+              {t('No tenants exist yet. Sign in as System Admin to create a tenant.')}
+            </p>
+          )}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit} data-testid="login-form">
           <input type="hidden" name="remember" value="true" />
           
-          {/* Login Type Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('Login Type')}
-            </label>
-            <div className="flex gap-4">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="loginType"
-                  value="admin"
-                  checked={loginType === 'admin'}
-                  onChange={(e) => setLoginType(e.target.value as 'admin' | 'tenant')}
-                  className="mr-2"
-                  data-testid="login-type-admin"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{t('System Admin')}</span>
+          {/* Login Type Selection — tenant option only when tenants exist */}
+          {allowTenantLogin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('Login Type')}
               </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="loginType"
-                  value="tenant"
-                  checked={loginType === 'tenant'}
-                  onChange={(e) => setLoginType(e.target.value as 'admin' | 'tenant')}
-                  className="mr-2"
-                  data-testid="login-type-tenant"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{t('Tenant User')}</span>
-              </label>
+              <div className="flex gap-4">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="loginType"
+                    value="admin"
+                    checked={loginType === 'admin'}
+                    onChange={(e) => setLoginType(e.target.value as 'admin' | 'tenant')}
+                    className="mr-2"
+                    data-testid="login-type-admin"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('System Admin')}</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="loginType"
+                    value="tenant"
+                    checked={loginType === 'tenant'}
+                    onChange={(e) => setLoginType(e.target.value as 'admin' | 'tenant')}
+                    className="mr-2"
+                    data-testid="login-type-tenant"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('Tenant User')}</span>
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="rounded-md shadow-sm space-y-4">
             {/* Tenant ID field (only for tenant login) */}
-            {loginType === 'tenant' && (
+            {allowTenantLogin && loginType === 'tenant' && (
               <div>
                 <label htmlFor="tenant-id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('Tenant ID')}

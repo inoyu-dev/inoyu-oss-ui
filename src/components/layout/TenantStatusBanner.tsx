@@ -5,34 +5,44 @@ interface TenantStatus {
   tenantId: string | null;
   version: string;
   isV3: boolean;
+  supportsTenants: boolean;
+  tenantAdminEnabled: boolean;
   hasCredentials: boolean;
   tenantAvailable: boolean;
-  tenantExists?: boolean; // Whether the tenant actually exists in Unomi
+  tenantExists?: boolean;
   error?: string;
 }
 
+/**
+ * Destructive banner for on-prem Unomi 3.1+ when a configured tenant is broken.
+ * Hidden for Unomi &lt; 3.1, SaaS (JWT), and on-prem setup (no tenant yet — ActiveTenantBanner handles that).
+ */
 const TenantStatusBanner: React.FC = () => {
   const { t } = useTranslation('common');
   const [tenantStatus, setTenantStatus] = useState<TenantStatus | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch tenant status
+    let cancelled = false;
+
     fetch('/api/config/tenant')
-      .then(res => res.json())
-      .then(data => {
-        const isV3 = data.isV3 || false;
-        const tenantId = data.tenantId;
-        const tenantExists = data.tenantExists !== false; // Default to true if not specified
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
+        const supportsTenantsFlag = data.supportsTenants === true;
+        const tenantAdminEnabled = data.tenantAdminEnabled === true;
+        const tenantId = data.tenantId as string | null;
+        const tenantExists = data.tenantExists !== false;
         const hasCredentials = data.hasCredentials || false;
         const tenantAvailable = data.tenantAvailable !== false;
-        
-        // Determine error message based on specific issue
+
         let error: string | undefined;
-        if (isV3 && !tenantAvailable) {
-          if (!tenantId) {
-            error = t('Tenant is not configured. Please set UNOMI_TENANT_ID.');
-          } else if (!tenantExists) {
+
+        // Only surface misconfiguration for on-prem when a tenant id is set but invalid
+        if (supportsTenantsFlag && tenantAdminEnabled && tenantId && !tenantAvailable) {
+          if (!tenantExists) {
             error = t('Tenant does not exist in Unomi', { tenantId });
           } else if (!hasCredentials) {
             error = t('Tenant credentials are missing', { tenantId });
@@ -40,49 +50,56 @@ const TenantStatusBanner: React.FC = () => {
             error = t('Tenant is not available');
           }
         }
-        
+
         setTenantStatus({
           tenantId,
           version: data.version,
-          isV3,
+          isV3: data.isV3 || false,
+          supportsTenants: supportsTenantsFlag,
+          tenantAdminEnabled,
           hasCredentials,
           tenantAvailable,
           tenantExists,
-          error
+          error,
         });
         setLoading(false);
       })
       .catch(() => {
-        // On error, assume V2 (no tenant required) to avoid showing error banner
+        if (cancelled) {
+          return;
+        }
         setTenantStatus({
           tenantId: null,
           version: 'unknown',
           isV3: false,
+          supportsTenants: false,
+          tenantAdminEnabled: false,
           hasCredentials: false,
-          tenantAvailable: true, // Default to available to avoid showing error
-          error: undefined
+          tenantAvailable: true,
+          error: undefined,
         });
         setLoading(false);
       });
+
+    return () => {
+      cancelled = true;
+    };
+    // Fetch once on mount; `t` is intentionally omitted (unstable identity from i18n).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Don't show anything while loading
-  if (loading) {
+  if (loading || !tenantStatus) {
     return null;
   }
 
-  // Don't show banner for V2 (tenants don't exist in V2)
-  if (!tenantStatus || !tenantStatus.isV3) {
+  // Pre-3.1 and SaaS: no tenant status banner
+  if (!tenantStatus.supportsTenants || !tenantStatus.tenantAdminEnabled) {
     return null;
   }
 
-  // Only show banner if tenant is not available (V3 only)
-  if (tenantStatus.tenantAvailable) {
+  if (!tenantStatus.error) {
     return null;
   }
-
-  // Use the error message from the API response
-  const errorMessage = tenantStatus.error || t('Tenant is not available');
 
   return (
     <div className="bg-destructive-lighter border-l-4 border-destructive p-4 mb-4">
@@ -103,11 +120,11 @@ const TenantStatusBanner: React.FC = () => {
         </div>
         <div className="ml-3 flex-1">
           <p className="text-sm text-destructive-dark font-medium">
-            {errorMessage}
+            {tenantStatus.error}
           </p>
           <p className="mt-1 text-sm text-destructive">
             {t('Some features may not work correctly. Please check your Unomi V3 configuration.')}
-            {tenantStatus.isV3 && tenantStatus.tenantId && (
+            {tenantStatus.tenantId && (
               <span className="block mt-1">
                 {t('Configured tenant')}: <code className="bg-destructive-light px-1 rounded">{tenantStatus.tenantId}</code>
               </span>

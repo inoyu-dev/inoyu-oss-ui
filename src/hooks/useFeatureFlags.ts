@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { FeatureFlags, DeploymentType, defaultMultiTenantFlags } from '@/config/feature-flags';
+import { FeatureFlags, DeploymentType, defaultOnPremiseFlags } from '@/config/feature-flags';
 import { FeatureFlagsResponse, getFeatureFlags } from '@/services/client/FeatureFlagsService';
 
 // Cache for feature flags to avoid repeated requests
@@ -49,8 +49,8 @@ export function useFeatureFlags() {
   }, [fetchFeatureFlags]);
 
   return {
-    featureFlags: data?.features || defaultMultiTenantFlags,
-    deploymentType: (data?.deploymentType || 'multi-tenant') as DeploymentType,
+    featureFlags: data?.features || defaultOnPremiseFlags,
+    deploymentType: (data?.deploymentType || 'on-premise') as DeploymentType,
     isLoading,
     error,
     refetch: fetchFeatureFlags,

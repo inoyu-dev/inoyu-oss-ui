@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { NavGroup, NavGroupProps } from './NavGroup';
 import { NavItemProps } from './NavItem';
+import TenantSwitcher from './TenantSwitcher';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
 import { FeatureFlags } from '@/config/feature-flags';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -105,8 +106,15 @@ const Sidebar: React.FC = () => {
 
     // Process groups: translate labels, apply item checks, merge injected items
     const processedGroups: NavGroupProps[] = pluginNav.groups.map((group) => {
-      // Apply checks to each item in the group
-      let items = group.items.map(applyItemChecks);
+      // Hide admin-only / feature-flagged items the same way as plugin injections
+      let items = group.items
+        .filter((item) => {
+          if (item.adminOnly && !isAdmin) return false;
+          const flag = item.featureFlag as keyof FeatureFlags | undefined;
+          if (flag === 'tenantAdmin' && !featureFlags.tenantAdmin) return false;
+          return true;
+        })
+        .map(applyItemChecks);
 
       // Apply replacements/removals from plugin items (keyed by href without leading slash)
       items = items.map((item) => {
@@ -221,6 +229,9 @@ const Sidebar: React.FC = () => {
           />
         ))}
       </nav>
+
+      {/* Tenant switcher (Unomi 3.1+ on-prem admin only) */}
+      <TenantSwitcher isCollapsed={isCollapsed} />
 
       {/* Footer Section */}
       <div className="p-4 border-t border-sidebar-border flex-shrink-0 bg-white dark:bg-white/5">

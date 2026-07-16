@@ -1,4 +1,5 @@
 import axios, { AxiosError } from 'axios';
+import { DEFAULT_DEPLOYMENT_TYPE } from '@/config/env-defaults';
 import { getUnomiConfig, getAuthHeaders, getAuthCredentials, isUnomiV3, hasV3Credentials } from '@/lib/unomi-config';
 import { getDefaultFeatureFlags, DeploymentType } from '@/config/feature-flags';
 import { createHandler, APIError } from '@/lib/api-middleware';
@@ -14,7 +15,7 @@ export default createHandler({
     const endpoint = `/cxs/${fullPath}`;
 
     // Check feature flags for restricted endpoints
-    const deploymentType = (process.env.DEPLOYMENT_TYPE || 'multi-tenant') as DeploymentType;
+    const deploymentType = (process.env.DEPLOYMENT_TYPE || DEFAULT_DEPLOYMENT_TYPE) as DeploymentType;
     const featureFlags = getDefaultFeatureFlags(deploymentType);
 
     if (endpoint.includes('/groovy-actions') && !featureFlags.groovyActions) {
