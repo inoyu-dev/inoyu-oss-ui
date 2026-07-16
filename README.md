@@ -30,6 +30,8 @@ cp .env.example .env.local
 npm run dev
 ```
 
+The app runs at [http://localhost:3131](http://localhost:3131).
+
 ## Configuration
 
 | Variable | Default | Description |

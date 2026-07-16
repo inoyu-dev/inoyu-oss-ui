@@ -9,9 +9,9 @@
     "url": "https://github.com/inoyu-dev/inoyu-oss-ui.git"
   },
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3131",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 3131",
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
