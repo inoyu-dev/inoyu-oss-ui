@@ -1,7 +1,7 @@
 /**
- * Core Plugin — Inoyu UI Open Source Features
+ * Core Plugin — Inoyu OSS UI Open Source Features
  *
- * Declares all features that belong to the open-source "Inoyu UI" tier.
+ * Declares all features that belong to the open-source "Inoyu OSS UI" tier.
  * These are features that use the Unomi REST API directly and don't
  * require custom storage backends.
  *
@@ -89,7 +89,7 @@ export const CORE_COMPONENTS = [
  * These form the base sidebar. Plugins can add additional groups.
  */
 /**
- * Navigation groups for Inoyu UI.
+ * Navigation groups for Inoyu OSS UI.
  * Only Unomi-native features. Plugins can extend with additional groups.
  */
 export const CORE_NAVIGATION_GROUPS = [
@@ -170,9 +170,9 @@ export const CORE_NAVIGATION_GROUPS = [
 
 export const corePlugin: Plugin = {
   id: 'unomi-core',
-  name: 'Inoyu UI Core',
+  name: 'Inoyu OSS UI Core',
   version: '1.0.0',
-  description: 'Core Inoyu UI features — open source, Apache 2.0 licensed',
+  description: 'Core Inoyu OSS UI features — open source, Apache 2.0 licensed',
   author: 'Inoyu',
   license: 'Apache-2.0',
   priority: 0,
@@ -186,11 +186,11 @@ export const corePlugin: Plugin = {
         core: {
           routes: CORE_ROUTES,
           components: CORE_COMPONENTS,
-          description: 'Open-source Inoyu UI features using Unomi REST API',
+          description: 'Open-source Inoyu OSS UI features using Unomi REST API',
         },
       },
       'app': {
-        appName: 'Inoyu UI',
+        appName: 'Inoyu OSS UI',
         tier: 'core',
       },
     },

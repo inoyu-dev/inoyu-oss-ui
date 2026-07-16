@@ -6,7 +6,7 @@
  * - Real-time JSON syntax validation with error markers
  * - Optional JSON Schema validation (Unomi schemas, custom schemas)
  * - Read-only mode for JSON viewers
- * - Dark/light theme auto-detection with custom Unomi UI themes
+ * - Dark/light theme auto-detection with custom Inoyu OSS UI themes
  * - Context-aware autocompletion for Unomi types, operators, properties
  * - Hover documentation for condition/action types
  * - Lazy-loaded (no SSR) — Monaco is ~2 MB and loaded from CDN
@@ -91,7 +91,7 @@ export default function JsonEditor({
     : `inmemory://inoyu-oss-ui/editor${instanceId.replace(/:/g, '_')}.json`;
 
   // Auto-detect theme from ThemeContext (always called — hooks must be unconditional)
-  // Uses custom Unomi UI themes (registered on mount) instead of built-in vs/vs-dark
+  // Uses custom Inoyu OSS UI themes (registered on mount) instead of built-in vs/vs-dark
   const { resolvedTheme } = useTheme();
   const editorTheme = themeProp ?? (resolvedTheme === 'dark' ? 'unomi-dark' : 'unomi-light');
 
@@ -102,7 +102,7 @@ export default function JsonEditor({
     (editorInstance, monacoInstance) => {
       editorRef.current = editorInstance;
 
-      // Register Unomi UI custom themes + autocompletion/hover (idempotent)
+      // Register Inoyu OSS UI custom themes + autocompletion/hover (idempotent)
       registerUnomiThemes(monacoInstance);
       registerUnomiCompletions(monacoInstance);
       registerUnomiHoverProvider(monacoInstance);

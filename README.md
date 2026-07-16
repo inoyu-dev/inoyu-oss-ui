@@ -1,4 +1,4 @@
-# Inoyu UI
+# Inoyu OSS UI
 
 Open-source web interface for [Apache Unomi](https://unomi.apache.org/) — the open-source Customer Data Platform. Powered by Apache Unomi.
 
@@ -41,7 +41,7 @@ npm run dev
 
 ## Plugin System
 
-Inoyu UI supports a plugin architecture for extending functionality:
+Inoyu OSS UI supports a plugin architecture for extending functionality:
 
 ```typescript
 import type { Plugin } from '@/plugins/types';
