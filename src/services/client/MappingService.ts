@@ -16,7 +16,7 @@ export interface StoredMapping {
  */
 export async function saveMappingConfiguration(mapping: Record<string, unknown>): Promise<StoredMapping> {
   const id = mapping.id as string | undefined;
-  const url = id ? `/api/mappings/${id}` : '/api/mappings/deploy';
+  const url = id ? `/api/mappings/${id}` : '/api/mappings';
   const method = id ? 'PUT' : 'POST';
 
   const response = await fetch(url, {
@@ -38,7 +38,7 @@ export async function saveMappingConfiguration(mapping: Record<string, unknown>)
  * Get all mapping configurations
  */
 export async function getMappingConfigurations(): Promise<StoredMapping[]> {
-  const response = await fetch('/api/mappings/deploy');
+  const response = await fetch('/api/mappings');
   if (!response.ok) {
     throw new Error('Failed to fetch mapping configurations');
   }
@@ -50,10 +50,10 @@ export async function getMappingConfigurations(): Promise<StoredMapping[]> {
  * Update the active status of a mapping configuration
  */
 export async function updateMappingStatus(id: string, isActive: boolean): Promise<void> {
-  const response = await fetch(`/api/mappings/${id}`, {
-    method: 'PUT',
+  const response = await fetch('/api/mappings', {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ isActive }),
+    body: JSON.stringify({ id, isActive }),
   });
   if (!response.ok) {
     throw new Error('Failed to update mapping status');
