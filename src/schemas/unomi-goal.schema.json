@@ -4,13 +4,13 @@
   "description": "Apache Unomi goal definition.",
   "type": "object",
   "properties": {
-    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "metadata": { "$ref": "http://inoyu-oss-ui/schemas/unomi-metadata.json" },
     "startEvent": {
-      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "$ref": "http://inoyu-oss-ui/schemas/unomi-condition.json",
       "description": "Condition that starts tracking this goal"
     },
     "targetEvent": {
-      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "$ref": "http://inoyu-oss-ui/schemas/unomi-condition.json",
       "description": "Condition that completes this goal"
     },
     "campaignId": {

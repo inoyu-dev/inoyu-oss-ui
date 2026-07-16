@@ -4,9 +4,9 @@
   "description": "Apache Unomi segment definition.",
   "type": "object",
   "properties": {
-    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "metadata": { "$ref": "http://inoyu-oss-ui/schemas/unomi-metadata.json" },
     "condition": {
-      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "$ref": "http://inoyu-oss-ui/schemas/unomi-condition.json",
       "description": "Condition that determines segment membership"
     }
   },

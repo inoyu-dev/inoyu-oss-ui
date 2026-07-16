@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "http://unomi-ui/schemas/unomi-action.json",
+  "$id": "http://inoyu-oss-ui/schemas/unomi-action.json",
   "title": "Unomi Action",
   "description": "Apache Unomi action definition. Used in rules and event processing.",
   "type": "object",

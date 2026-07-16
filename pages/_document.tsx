@@ -17,7 +17,7 @@ class MyDocument extends Document {
               __html: `
                 (function() {
                   try {
-                    const theme = localStorage.getItem('unomi-ui-theme-preference') || 'system';
+                    const theme = localStorage.getItem('inoyu-oss-ui-theme-preference') || 'system';
                     const root = document.documentElement;
                     root.classList.remove('dark', 'light');
                     

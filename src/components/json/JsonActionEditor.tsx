@@ -19,7 +19,7 @@ export default function JsonActionEditor<T = Record<string, unknown>>(props: Pro
     <JsonEntityEditor<T>
       {...props}
       schema={UNOMI_ACTION_SCHEMA}
-      schemaUri="http://unomi-ui/schemas/unomi-action.json"
+      schemaUri="http://inoyu-oss-ui/schemas/unomi-action.json"
     />
   );
 }

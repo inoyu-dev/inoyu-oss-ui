@@ -19,7 +19,7 @@ export default function JsonSegmentEditor<T = Record<string, unknown>>(props: Pr
     <JsonEntityEditor<T>
       {...props}
       schema={UNOMI_SEGMENT_SCHEMA}
-      schemaUri="http://unomi-ui/schemas/unomi-segment.json"
+      schemaUri="http://inoyu-oss-ui/schemas/unomi-segment.json"
     />
   );
 }

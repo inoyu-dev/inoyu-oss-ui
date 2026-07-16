@@ -4,15 +4,15 @@
   "description": "Apache Unomi rule definition. Combines conditions with actions.",
   "type": "object",
   "properties": {
-    "metadata": { "$ref": "http://unomi-ui/schemas/unomi-metadata.json" },
+    "metadata": { "$ref": "http://inoyu-oss-ui/schemas/unomi-metadata.json" },
     "condition": {
-      "$ref": "http://unomi-ui/schemas/unomi-condition.json",
+      "$ref": "http://inoyu-oss-ui/schemas/unomi-condition.json",
       "description": "Trigger condition for the rule"
     },
     "actions": {
       "type": "array",
       "description": "Actions to execute when condition is met",
-      "items": { "$ref": "http://unomi-ui/schemas/unomi-action.json" }
+      "items": { "$ref": "http://inoyu-oss-ui/schemas/unomi-action.json" }
     },
     "linkedItems": {
       "type": "array",

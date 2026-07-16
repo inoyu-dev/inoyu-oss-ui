@@ -19,7 +19,7 @@ export default function JsonRuleEditor<T = Record<string, unknown>>(props: Props
     <JsonEntityEditor<T>
       {...props}
       schema={UNOMI_RULE_SCHEMA}
-      schemaUri="http://unomi-ui/schemas/unomi-rule.json"
+      schemaUri="http://inoyu-oss-ui/schemas/unomi-rule.json"
     />
   );
 }

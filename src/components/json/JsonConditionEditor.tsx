@@ -19,7 +19,7 @@ export default function JsonConditionEditor<T = Record<string, unknown>>(props: 
     <JsonEntityEditor<T>
       {...props}
       schema={UNOMI_CONDITION_SCHEMA}
-      schemaUri="http://unomi-ui/schemas/unomi-condition.json"
+      schemaUri="http://inoyu-oss-ui/schemas/unomi-condition.json"
     />
   );
 }

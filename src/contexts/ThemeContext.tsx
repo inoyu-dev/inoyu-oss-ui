@@ -10,7 +10,7 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'unomi-ui-theme-preference';
+const STORAGE_KEY = 'inoyu-oss-ui-theme-preference';
 
 // Load theme from localStorage synchronously (before React renders)
 const loadThemeFromStorage = (): ThemeMode => {

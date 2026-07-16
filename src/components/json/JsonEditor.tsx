@@ -87,8 +87,8 @@ export default function JsonEditor({
   // single Monaco model (which would cause schema conflicts with fileMatch).
   const instanceId = useId();
   const modelPath = schemaUri
-    ? `inmemory://unomi-ui/${schemaUri.replace(/[^a-zA-Z0-9_/-]/g, '_')}.json`
-    : `inmemory://unomi-ui/editor${instanceId.replace(/:/g, '_')}.json`;
+    ? `inmemory://inoyu-oss-ui/${schemaUri.replace(/[^a-zA-Z0-9_/-]/g, '_')}.json`
+    : `inmemory://inoyu-oss-ui/editor${instanceId.replace(/:/g, '_')}.json`;
 
   // Auto-detect theme from ThemeContext (always called — hooks must be unconditional)
   // Uses custom Unomi UI themes (registered on mount) instead of built-in vs/vs-dark
@@ -112,7 +112,7 @@ export default function JsonEditor({
       // don't bleed between multiple JsonEditor instances on the same page.
       const schemas: { uri: string; fileMatch: string[]; schema: Record<string, unknown> }[] = [];
       if (schema) {
-        const resolvedUri = schemaUri || 'http://unomi-ui/schemas/inline.json';
+        const resolvedUri = schemaUri || 'http://inoyu-oss-ui/schemas/inline.json';
         const model = editorInstance.getModel();
         const matchPattern = model ? model.uri.toString() : '*';
         schemas.push({
