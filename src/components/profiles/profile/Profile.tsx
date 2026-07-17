@@ -149,7 +149,7 @@ const UnomiProfileDashboard: React.FC<UnomiProfileDashboardProps> = ({ profileId
     }
 
     fetchProfile();
-  }, [profileId]);
+  }, [profileId, t]);
 
   // Add new effect for timeline data
   useEffect(() => {

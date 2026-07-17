@@ -67,7 +67,7 @@ const JsonSchemaList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchSchemas();

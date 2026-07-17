@@ -98,7 +98,7 @@ export const ProfileList: React.FC = () => {
     };
 
     fetchProfiles();
-  }, []);
+  }, [t]);
 
   const handleSearch = () => {
     // Implement the search logic here

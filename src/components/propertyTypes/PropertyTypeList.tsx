@@ -78,7 +78,7 @@ const PropertyTypeList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTarget, selectedTag]);
+  }, [selectedTarget, selectedTag, t]);
 
   useEffect(() => {
     fetchPropertyTypes();
