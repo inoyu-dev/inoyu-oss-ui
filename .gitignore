@@ -14,4 +14,8 @@ playwright/.cache/
 
 # Staging scripts
 scripts/.staging-state
-scripts/.staging-state.json.env.local
+scripts/.staging-state.json
+
+# Local env (secrets) — keep .env.example tracked
+.env.local
+.env*.local
