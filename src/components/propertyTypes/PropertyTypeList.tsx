@@ -78,7 +78,7 @@ const PropertyTypeList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedTarget, selectedTag, t]);
+  }, [selectedTarget, selectedTag]); // omit `t` to avoid i18n refetch loops
 
   useEffect(() => {
     fetchPropertyTypes();
@@ -179,7 +179,7 @@ const PropertyTypeList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64" data-testid="property-types-list">
         <RefreshCw className="h-8 w-8 animate-spin" />
         <span className="ml-2">{t('Loading property types...')}</span>
       </div>
@@ -188,7 +188,7 @@ const PropertyTypeList: React.FC = () => {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" data-testid="property-types-list">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>{t('Error')}</AlertTitle>
         <AlertDescription>{error}</AlertDescription>

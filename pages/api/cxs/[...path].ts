@@ -71,10 +71,13 @@ export default createHandler({
         data?: unknown;
         headers: Record<string, string>;
         auth?: { username: string; password: string };
+        timeout: number;
       } = {
         method: method ?? 'GET',
         url: `${config.baseUrl}${endpoint}`,
         headers,
+        // Prevent UI spinners from hanging forever when Unomi/auth misbehaves.
+        timeout: 15_000,
       };
 
       if (method !== 'GET' && body) {

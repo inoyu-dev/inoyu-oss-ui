@@ -40,14 +40,18 @@ export default createHandler({
       }
       rememberTenantApiKeys(tenantId, keys);
 
-      res.setHeader('Set-Cookie', [
-        `admin_tenant_context=${JSON.stringify({
+      // Cookie values must be URI-encoded — raw JSON quotes break browser/Next cookie parsing.
+      const tenantContext = encodeURIComponent(
+        JSON.stringify({
           tenantId: tenant.tenantId,
           publicApiKey: keys.publicApiKey,
           privateApiKey: keys.privateApiKey,
           name: tenant.name,
           switchedAt: new Date().toISOString(),
-        })}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax`,
+        })
+      );
+      res.setHeader('Set-Cookie', [
+        `admin_tenant_context=${tenantContext}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax`,
       ]);
 
       return res.status(200).json({

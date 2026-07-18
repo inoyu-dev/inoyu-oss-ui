@@ -1,5 +1,7 @@
-import chalk from 'chalk';
-
+/**
+ * Simple logger. Avoid chalk here: Next/webpack default-interop compiles
+ * `chalk.red(...)` as `e().red(...)`, which throws at runtime.
+ */
 class Logger {
   private static instance: Logger;
   private silent: boolean = false;
@@ -25,26 +27,26 @@ class Logger {
 
   error(...args: unknown[]) {
     // Always show errors
-    console.error(chalk.red(...args));
+    console.error(...args);
   }
 
   info(...args: unknown[]) {
     if (!this.silent) {
-      console.log(chalk.blue('ℹ'), ...args);
+      console.log('ℹ', ...args);
     }
   }
 
   success(...args: unknown[]) {
     if (!this.silent) {
-      console.log(chalk.green('✓'), ...args);
+      console.log('✓', ...args);
     }
   }
 
   warn(...args: unknown[]) {
     if (!this.silent) {
-      console.log(chalk.yellow('⚠'), ...args);
+      console.warn('⚠', ...args);
     }
   }
 }
 
-export const logger = Logger.getInstance(); 
+export const logger = Logger.getInstance();
