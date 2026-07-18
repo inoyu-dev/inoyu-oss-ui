@@ -31,7 +31,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useEntityList } from '@/hooks/useEntityList';
 import SearchAndFilterBar from '@/components/shared/SearchAndFilterBar';
-import SegmentBuilder from './SegmentBuilder';
+import SegmentBuilder, { type SegmentBuilderProps } from './SegmentBuilder';
+import { useRegisteredComponent } from '@/plugins/useRegisteredComponent';
 
 interface SegmentWithCount extends UnomiMetadata {
   profileCount?: number;
@@ -39,6 +40,10 @@ interface SegmentWithCount extends UnomiMetadata {
 
 const SegmentList: React.FC = () => {
   const { t } = useTranslation();
+  const ResolvedSegmentBuilder = useRegisteredComponent<SegmentBuilderProps>(
+    'segments/SegmentBuilder',
+    SegmentBuilder
+  );
 
   const fetchSegmentsWithCounts = useCallback(async (): Promise<SegmentWithCount[]> => {
     const segmentsData = await getAllSegments(0, 100, 'name:asc');
@@ -412,7 +417,7 @@ const SegmentList: React.FC = () => {
         </CardContent>
       </Card>
 
-      <SegmentBuilder
+      <ResolvedSegmentBuilder
         segment={editingSegment ?? undefined}
         isOpen={showSegmentBuilder}
         onClose={handleBuilderClose}

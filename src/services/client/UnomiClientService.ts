@@ -16,4 +16,3 @@ export * from './PropertyTypeService';
 export * from './JsonSchemaService';
 export * from './ConditionTypeService';
 export * from './ActionTypeService';
-export * from './MappingService';

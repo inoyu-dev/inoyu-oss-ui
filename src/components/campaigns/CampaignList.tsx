@@ -30,7 +30,14 @@ import { useTranslation } from 'react-i18next';
 import { useEntityList } from '@/hooks/useEntityList';
 import SearchAndFilterBar from '@/components/shared/SearchAndFilterBar';
 import CampaignBuilder from './CampaignBuilder';
-import CampaignStats from './CampaignStats';
+import { useComponentRegistry } from '@/plugins/useComponentRegistry';
+
+interface CampaignStatsProps {
+  campaign: UnomiCampaign;
+  stats: CampaignDetail;
+  isOpen: boolean;
+  onClose: () => void;
+}
 
 interface CampaignWithStats extends UnomiMetadata {
   stats?: CampaignDetail;
@@ -39,6 +46,8 @@ interface CampaignWithStats extends UnomiMetadata {
 
 const CampaignList: React.FC = () => {
   const { t } = useTranslation();
+  const { getComponent } = useComponentRegistry();
+  const CampaignStats = getComponent<CampaignStatsProps>('campaigns/CampaignStats');
 
   const getCampaignStatus = useCallback((campaign: UnomiCampaign): 'active' | 'upcoming' | 'ended' => {
     const now = new Date();
@@ -266,7 +275,7 @@ const CampaignList: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        {campaign.stats && (
+                        {CampaignStats && campaign.stats && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -358,7 +367,7 @@ const CampaignList: React.FC = () => {
         />
       )}
 
-      {showCampaignStats && campaignStats && selectedCampaign && (
+      {CampaignStats && showCampaignStats && campaignStats && selectedCampaign && (
         <CampaignStats
           campaign={selectedCampaign}
           stats={campaignStats}

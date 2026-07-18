@@ -1,5 +1,5 @@
 {
-  "name": "inoyu-oss-ui",
+  "name": "@inoyu/oss-ui",
   "version": "1.0.0",
   "description": "Inoyu OSS UI — Open-source UI for Apache Unomi Customer Data Platform",
   "license": "Apache-2.0",
@@ -80,5 +80,13 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./styles/globals.css": "./src/styles/globals.css",
+    "./plugins": "./src/plugins/index.ts",
+    "./plugins/*": "./src/plugins/*",
+    "./pages/*": "./pages/*",
+    "./src/*": "./src/*"
   }
 }

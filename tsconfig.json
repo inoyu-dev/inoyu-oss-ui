@@ -31,6 +31,8 @@
     "**/*.tsx"
   ],
   "exclude": [
+    "node_modules.bak-*",
+    
     "node_modules"
   ]
 }

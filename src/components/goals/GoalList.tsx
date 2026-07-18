@@ -15,21 +15,29 @@ import {
   Edit3,
   BarChart3,
 } from 'lucide-react';
-import type { UnomiGoal, GoalReport } from '@/services/client/UnomiClientService';
+import type { UnomiGoal } from '@/services/client/UnomiClientService';
 import {
   getAllGoals,
   getGoalDefinition,
   getGoalReport,
   deleteGoal,
+  type GoalReport,
 } from '@/services/client/UnomiClientService';
 import { useTranslation } from 'react-i18next';
 import { useEntityList } from '@/hooks/useEntityList';
 import SearchAndFilterBar from '@/components/shared/SearchAndFilterBar';
 import GoalBuilder from './GoalBuilder';
-import GoalReportViewer from './GoalReportViewer';
+import { useComponentRegistry } from '@/plugins/useComponentRegistry';
+
+interface GoalReportViewerProps {
+  goal: UnomiGoal;
+  report: GoalReport;
+}
 
 const GoalList: React.FC = () => {
   const { t } = useTranslation();
+  const { getComponent } = useComponentRegistry();
+  const GoalReportViewer = getComponent<GoalReportViewerProps>('goals/GoalReportViewer');
 
   const {
     filteredItems: filteredGoals,
@@ -196,14 +204,16 @@ const GoalList: React.FC = () => {
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewReport(goal.id)}
-                        >
-                          <BarChart3 className="h-4 w-4 mr-2" />
-                          {t('Report')}
-                        </Button>
+                        {GoalReportViewer && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewReport(goal.id)}
+                          >
+                            <BarChart3 className="h-4 w-4 mr-2" />
+                            {t('Report')}
+                          </Button>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"
@@ -276,7 +286,7 @@ const GoalList: React.FC = () => {
         />
       )}
 
-      {showGoalReport && goalReport && selectedGoal && (
+      {GoalReportViewer && showGoalReport && goalReport && selectedGoal && (
         <Dialog open={showGoalReport} onOpenChange={setShowGoalReport}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>

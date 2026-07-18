@@ -37,7 +37,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useEntityList } from '@/hooks/useEntityList';
 import SearchAndFilterBar from '@/components/shared/SearchAndFilterBar';
-import RuleBuilder from './RuleBuilder';
+import RuleBuilder, { type RuleBuilderProps } from './RuleBuilder';
+import { useRegisteredComponent } from '@/plugins/useRegisteredComponent';
 
 interface RuleWithStats extends UnomiMetadata {
   statistics?: UnomiRuleStatistics;
@@ -57,6 +58,10 @@ const formatNumber = (num: number): string => {
 
 const RulesList: React.FC = () => {
   const { t } = useTranslation();
+  const ResolvedRuleBuilder = useRegisteredComponent<RuleBuilderProps>(
+    'rules/RuleBuilder',
+    RuleBuilder
+  );
 
   const fetchRulesWithStats = useCallback(async (): Promise<RuleWithStats[]> => {
     const rulesData = await getAllRules();
@@ -594,7 +599,7 @@ const RulesList: React.FC = () => {
         </CardContent>
       </Card>
 
-      <RuleBuilder
+      <ResolvedRuleBuilder
         rule={editingRule ?? undefined}
         isOpen={showRuleBuilder}
         onClose={handleBuilderClose}
