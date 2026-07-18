@@ -18,7 +18,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     }
   }, [loading, user, router]);
 
-  if (loading) {
+  // Do not mount protected UI until authenticated — otherwise the page flashes
+  // and fires API calls (e.g. /api/json-schemas) that 401 before redirect.
+  if (loading || !user) {
     return <div>{t('Loading...')}</div>;
   }
 

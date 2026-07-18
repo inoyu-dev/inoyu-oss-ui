@@ -67,6 +67,7 @@ const JsonSchemaList: React.FC = () => {
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- omit `t` to avoid refetch loops
   }, []);
 
   useEffect(() => {
@@ -171,7 +172,7 @@ const JsonSchemaList: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64" data-testid="schemas-list">
         <RefreshCw className="h-8 w-8 animate-spin" />
         <span className="ml-2">{t('Loading schemas...')}</span>
       </div>
@@ -180,7 +181,7 @@ const JsonSchemaList: React.FC = () => {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" data-testid="schemas-list">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>{t('Error')}</AlertTitle>
         <AlertDescription>{error}</AlertDescription>

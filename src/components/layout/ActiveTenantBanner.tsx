@@ -90,7 +90,7 @@ const ActiveTenantBanner: React.FC = () => {
     featureFlags.tenantAdmin,
     isAdmin,
     activeTenant,
-    router.pathname,
+    router,
   ]);
 
   const handleExitContext = async () => {

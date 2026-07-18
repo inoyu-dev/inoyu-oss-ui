@@ -149,6 +149,7 @@ const UnomiProfileDashboard: React.FC<UnomiProfileDashboardProps> = ({ profileId
     }
 
     fetchProfile();
+    // Intentionally omit `t` — i18n identity churn retriggers fetch and sticks loading.
   }, [profileId]);
 
   // Add new effect for timeline data
@@ -309,7 +310,7 @@ const UnomiProfileDashboard: React.FC<UnomiProfileDashboardProps> = ({ profileId
   if (!profile) {
     console.log('Rendering not found state');
     return (
-      <div className="p-4">
+      <div className="p-4" data-testid="profile-not-found">
         <Card>
           <CardContent className="py-8">
             <div className="text-center">

@@ -56,6 +56,10 @@ export const ProfileList: React.FC = () => {
   const router = useRouter()
 
   useEffect(() => {
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15_000);
+
     const fetchProfiles = async () => {
       try {
         setLoading(true);
@@ -64,6 +68,7 @@ export const ProfileList: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
           },
+          signal: controller.signal,
           body: JSON.stringify({       // Match all profiles
             condition: {
               type: 'matchAllCondition'
@@ -80,6 +85,7 @@ export const ProfileList: React.FC = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data: ProfileResponse = await response.json();
+        if (cancelled) return;
         setProfiles(data.list);
         
         // Extract all unique fields from profiles
@@ -88,16 +94,27 @@ export const ProfileList: React.FC = () => {
           Object.keys(profile.properties).forEach(key => fields.add(key));
         });
         setAvailableFields(Array.from(fields));
-
+        setError(null);
         setLoading(false);
       } catch (error) {
+        if (cancelled) return;
         console.error('Error fetching profiles:', error);
         setError(t('Failed to fetch profiles'));
         setLoading(false);
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
+    // Do not depend on `t` — i18n identity changes would restart the fetch and
+    // leave the page stuck on "Loading profiles...".
     fetchProfiles();
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timeoutId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount-only fetch
   }, []);
 
   const handleSearch = () => {
@@ -146,8 +163,8 @@ export const ProfileList: React.FC = () => {
     router.push(`/profiles/${itemId}`);
   };
 
-  if (loading) return <div>{t('Loading profiles...')}</div>
-  if (error) return <div>{t('Error')}: {error}</div>
+  if (loading) return <div data-testid="profiles-list">{t('Loading profiles...')}</div>
+  if (error) return <div data-testid="profiles-list">{t('Error')}: {error}</div>
 
   return (
     <Card className="w-full" data-testid="profiles-list">

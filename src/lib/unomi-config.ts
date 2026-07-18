@@ -261,7 +261,12 @@ export function getTenantContextFromRequest(req?: RequestWithCookies): { tenantI
   try {
     const contextStr = req.cookies['admin_tenant_context'];
     if (contextStr) {
-      return JSON.parse(contextStr);
+      try {
+        return JSON.parse(contextStr);
+      } catch {
+        // Cookie may still be URI-encoded depending on the client/parser.
+        return JSON.parse(decodeURIComponent(contextStr));
+      }
     }
   } catch {
     // Ignore parse errors
