@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { requireAuth } from '@/lib/api-auth';
 import type { DecodedToken } from '@/lib/api-auth';
 import { APIError } from '@/middleware/error-handling';
-import { getTenantId } from '@/utils/tenant';
+import { getTenantId, isPlaceholderTenantId, mustRejectPlaceholderTenant } from '@/utils/tenant';
 import { logger } from '@/utils/logger';
 
 export { APIError };
@@ -86,6 +86,12 @@ export function withAuth(handler: AuthenticatedHandler): ApiHandler {
       return; // Response already sent by requireAuth
     }
     const tenant = getTenantId(req);
+    if (mustRejectPlaceholderTenant() && isPlaceholderTenantId(tenant)) {
+      throw new APIError(
+        401,
+        'Tenant scope required. Re-open CDP from SaaS or pass X-Inoyu-Tenant-Id.',
+      );
+    }
     const authenticatedReq = req as AuthenticatedRequest;
     authenticatedReq.user = user;
     authenticatedReq.tenant = tenant;

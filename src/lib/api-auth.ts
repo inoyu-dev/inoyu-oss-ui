@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verify, JwtPayload } from 'jsonwebtoken';
+import { mustRejectPlaceholderTenant } from '@/utils/tenant';
 
 export interface DecodedToken extends JwtPayload {
   email?: string;
@@ -66,4 +67,18 @@ export function requireAuth(
   }
 
   return decoded;
+}
+
+/**
+ * SaaS / hybrid: require a session JWT (Launch P4.6).
+ * On-prem keeps existing unauthenticated-or-Basic operator flows.
+ */
+export function requireAuthIfSaaS(
+  req: NextApiRequest,
+  res: NextApiResponse,
+): DecodedToken | 'not-required' | null {
+  if (!mustRejectPlaceholderTenant()) {
+    return 'not-required';
+  }
+  return requireAuth(req, res);
 }
