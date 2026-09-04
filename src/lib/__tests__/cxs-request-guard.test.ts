@@ -58,7 +58,17 @@ describe('assertCxsRequestIsolation', () => {
     );
   });
 
-  it('requires a real tenant on SaaS data-plane paths', () => {
+  it('does not require tenant scope on Unomi < 3.1 SaaS', () => {
+    process.env.UNOMI_VERSION = '2.2';
+    expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).not.toThrow();
+  });
+
+  it('does not require tenant scope on Unomi 3.0 SaaS', () => {
+    process.env.UNOMI_VERSION = '3.0';
+    expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).not.toThrow();
+  });
+
+  it('requires a real tenant on SaaS 3.1+ data-plane paths', () => {
     expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).toThrow(/Tenant scope required/);
     expect(() =>
       assertCxsRequestIsolation(req({ 'x-tenant-id': 't_bakery' }), '/cxs/segments'),
@@ -87,6 +97,12 @@ describe('mustUseTenantUnomiCredentials', () => {
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustUseTenantUnomiCredentials('/cxs/profiles')).toBe(true);
     expect(mustUseTenantUnomiCredentials('/cxs/tenants')).toBe(false);
+  });
+
+  it('is false on Unomi < 3.1 even for SaaS', () => {
+    process.env.UNOMI_VERSION = '2.2';
+    process.env.DEPLOYMENT_TYPE = 'multi-tenant';
+    expect(mustUseTenantUnomiCredentials('/cxs/profiles')).toBe(false);
   });
 
   it('is false on-premise', () => {

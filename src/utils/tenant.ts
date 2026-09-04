@@ -2,7 +2,7 @@ import { NextApiRequest } from 'next';
 import { verify, JwtPayload } from 'jsonwebtoken';
 import { DEFAULT_DEPLOYMENT_TYPE } from '@/config/env-defaults';
 import type { DeploymentType } from '@/config/feature-flags';
-import { isUnomiV3 } from '@/lib/unomi-config';
+import { supportsTenants } from '@/lib/unomi-config';
 import { APIError } from '@/middleware/error-handling';
 import { isPlaceholderTenantId } from '@/utils/tenant-ids';
 
@@ -41,11 +41,11 @@ function sessionTenantId(req: NextApiRequest): string | undefined {
 }
 
 /**
- * SaaS / hybrid Unomi 3+ must never silently fall back to `default`.
- * On-prem keeps the legacy default-tenant path for single-tenant operators.
+ * SaaS / hybrid Unomi 3.1+ must never silently fall back to `default`.
+ * Unomi &lt; 3.1 and on-prem keep the legacy default-tenant path.
  */
 export function mustRejectPlaceholderTenant(): boolean {
-  if (!isUnomiV3()) {
+  if (!supportsTenants()) {
     return false;
   }
   const deploymentType = (process.env.DEPLOYMENT_TYPE || DEFAULT_DEPLOYMENT_TYPE) as DeploymentType;
@@ -65,10 +65,10 @@ export function mustRejectPlaceholderTenant(): boolean {
 /**
  * Extracts tenantId from the request.
  * Session JWT wins over `x-tenant-id` so a caller cannot hop tenants with a header.
- * Unomi V2 always returns `default`.
+ * Unomi &lt; 3.1 always returns `default`.
  */
 export function getTenantId(req: NextApiRequest): string {
-  if (!isUnomiV3()) {
+  if (!supportsTenants()) {
     return 'default';
   }
 
@@ -86,8 +86,8 @@ export function getTenantId(req: NextApiRequest): string {
 }
 
 /**
- * Require a real Unomi tenant id (Launch P4.6).
- * Throws 401 on SaaS/hybrid when the resolved tenant is missing or `default`/`system`.
+ * Require a real Unomi tenant id on SaaS/hybrid (Unomi 3.1+).
+ * Throws 401 when the resolved tenant is missing or `default`/`system`.
  */
 export function requireScopedTenantId(req: NextApiRequest): string {
   const tenantId = getTenantId(req);

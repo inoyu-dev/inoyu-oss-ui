@@ -61,8 +61,14 @@ describe('mustRejectPlaceholderTenant', () => {
     restoreEnv(envSnap);
   });
 
-  it('is false on Unomi v2', () => {
+  it('is false on Unomi < 3.1 even when deployment is SaaS', () => {
     process.env.UNOMI_VERSION = '2.2';
+    process.env.DEPLOYMENT_TYPE = 'multi-tenant';
+    expect(mustRejectPlaceholderTenant()).toBe(false);
+  });
+
+  it('is false on Unomi 3.0 (tenants require 3.1+)', () => {
+    process.env.UNOMI_VERSION = '3.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustRejectPlaceholderTenant()).toBe(false);
   });
@@ -73,7 +79,7 @@ describe('mustRejectPlaceholderTenant', () => {
     expect(mustRejectPlaceholderTenant()).toBe(false);
   });
 
-  it('is true for SaaS multi-tenant Unomi 3+', () => {
+  it('is true for SaaS multi-tenant Unomi 3.1+', () => {
     process.env.UNOMI_VERSION = '3.1';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustRejectPlaceholderTenant()).toBe(true);
@@ -109,6 +115,11 @@ describe('getTenantId', () => {
 
   it('uses x-tenant-id when there is no session (site SDK / resolve)', () => {
     expect(getTenantId(req({ headers: { 'x-inoyu-tenant-id': 't_site' } }))).toBe('t_site');
+  });
+
+  it('always returns default on Unomi < 3.1', () => {
+    process.env.UNOMI_VERSION = '2.2';
+    expect(getTenantId(req({ headers: { 'x-tenant-id': 't_site' } }))).toBe('default');
   });
 
   it('ignores placeholder header and falls back to default', () => {
