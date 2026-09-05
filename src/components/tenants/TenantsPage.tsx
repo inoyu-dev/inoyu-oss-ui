@@ -259,7 +259,7 @@ const TenantsPage: NextPage = () => {
     <ProtectedRoute>
       <ProtectedAdminRoute>
         <Layout>
-          <div className="container mx-auto px-4 py-8 max-w-7xl">
+          <div className="container mx-auto px-4 py-8 max-w-7xl" data-testid="tenants-page">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">

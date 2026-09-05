@@ -1,0 +1,61 @@
+# Docker Compose for Unomi 3.1.0-SNAPSHOT (Apache Unomi master) + OpenSearch 3.7
+#
+# Build the Unomi image from source first:
+#   git clone https://github.com/apache/unomi.git && cd unomi
+#   mvn clean install -Pdocker -DskipTests -Ddocker.skip=true
+#   docker build -t apache/unomi:3.1.0-SNAPSHOT docker/target/filtered-docker
+#
+#   export OPENSEARCH_INITIAL_ADMIN_PASSWORD=Unomi.1ntegrat10n.Tests
+#   docker compose -f docker-compose.unomi-3.1.yml up -d
+#
+# Point the UI at this stack with:
+#   UNOMI_VERSION=3.1
+#   UNOMI_URL=http://localhost:8181
+
+name: inoyu-oss-unomi-3-1
+services:
+  opensearch:
+    image: opensearchproject/opensearch:3.7.0
+    ports:
+      - "9200:9200"
+      - "9600:9600"
+    environment:
+      - discovery.type=single-node
+      - cluster.name=opensearch-cluster
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-Unomi.1ntegrat10n.Tests}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -k -sf -u admin:Unomi.1ntegrat10n.Tests https://localhost:9200/_cluster/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 20
+      start_period: 90s
+
+  unomi:
+    image: apache/unomi:3.1.0-SNAPSHOT
+    ports:
+      - "8181:8181"
+      - "9443:9443"
+      - "8102:8102"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      - UNOMI_AUTO_START=true
+      - UNOMI_DISTRIBUTION=unomi-distribution-opensearch
+      - UNOMI_OPENSEARCH_ADDRESSES=opensearch:9200
+      - UNOMI_OPENSEARCH_USERNAME=admin
+      - UNOMI_OPENSEARCH_PASSWORD=${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-Unomi.1ntegrat10n.Tests}
+      - UNOMI_THIRDPARTY_PROVIDER1_IPADDRESSES=0.0.0.0/0,::1,127.0.0.1,192.168.0.0/16

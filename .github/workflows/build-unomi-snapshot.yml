@@ -1,0 +1,102 @@
+# Builds apache/unomi:3.1.0-SNAPSHOT from github.com/apache/unomi master
+# and uploads a docker save artifact for dependent workflows/jobs.
+#
+# Speed: image tar is cached by Unomi git SHA.
+name: Build Unomi 3.1 Snapshot
+
+on:
+  workflow_call:
+    outputs:
+      artifact-name:
+        description: Name of the uploaded docker image artifact
+        value: unomi-docker-image
+      unomi-sha:
+        description: Apache Unomi commit SHA used for this image
+        value: ${{ jobs.resolve-sha.outputs.sha }}
+
+jobs:
+  resolve-sha:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.unomi-sha.outputs.sha }}
+    steps:
+      - name: Checkout Apache Unomi (master)
+        uses: actions/checkout@v5
+        with:
+          repository: apache/unomi
+          ref: master
+          path: unomi
+          fetch-depth: 1
+
+      - name: Record Unomi commit
+        id: unomi-sha
+        working-directory: unomi
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  build-unomi:
+    needs: resolve-sha
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    concurrency:
+      group: oss-unomi-image-${{ needs.resolve-sha.outputs.sha }}
+      cancel-in-progress: false
+    steps:
+      - name: Restore cached Unomi image
+        id: image-cache
+        uses: actions/cache@v5
+        with:
+          path: unomi-image.tar.gz
+          key: unomi-docker-amd64-${{ needs.resolve-sha.outputs.sha }}
+
+      - name: Checkout Apache Unomi (master)
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v5
+        with:
+          repository: apache/unomi
+          ref: master
+          path: unomi
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Cache Unomi Maven repo by commit
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v5
+        with:
+          path: ~/.m2/repository
+          key: unomi-m2-${{ needs.resolve-sha.outputs.sha }}
+          restore-keys: |
+            unomi-m2-
+
+      - name: Build Unomi (skip tests, skip fabric8 multi-arch docker)
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        working-directory: unomi
+        run: |
+          mvn -B install -Pdocker -DskipTests -Ddocker.skip=true
+
+      - name: Build linux/amd64 Docker image
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        working-directory: unomi/docker/target/filtered-docker
+        run: |
+          test -f unomi.tar.gz
+          test -f Dockerfile
+          docker build -t apache/unomi:3.1.0-SNAPSHOT .
+
+      - name: Save image artifact
+        if: steps.image-cache.outputs.cache-hit != 'true'
+        run: |
+          docker save apache/unomi:3.1.0-SNAPSHOT | gzip > unomi-image.tar.gz
+          ls -lh unomi-image.tar.gz
+
+      - name: Upload Unomi image
+        uses: actions/upload-artifact@v6
+        with:
+          name: unomi-docker-image
+          path: unomi-image.tar.gz
+          retention-days: 1
