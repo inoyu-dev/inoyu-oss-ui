@@ -1,6 +1,6 @@
 /**
  * Tenant mode matrix tests:
- *   Unomi version (>= 3.1 vs < 3.1) × deployment (SaaS multi-tenant vs on-premise)
+ *   Unomi version (>= 4.0 vs < 4.0) × deployment (SaaS multi-tenant vs on-premise)
  * Plus first-login bootstrap (system admin only when no tenants).
  */
 
@@ -82,11 +82,11 @@ describe('code defaults when env unset (env-defaults.ts)', () => {
     restoreEnv(envSnap);
   });
 
-  it('defaults to Unomi 3.1 + on-premise (tenant admin UI on)', () => {
+  it('defaults to Unomi 4.0 + on-premise (tenant admin UI on)', () => {
     expect(supportsTenants()).toBe(true);
     expect(isTenantAdminEnabled()).toBe(true);
     expect(isTenantAdminUiEnabled()).toBe(true);
-    expect(getUnomiConfig().version).toBe('3.1');
+    expect(getUnomiConfig().version).toBe('4.0');
     expect(getTenantUiCapabilities(false)).toMatchObject({
       supportsTenants: true,
       deploymentTenantAdmin: true,
@@ -116,6 +116,8 @@ describe('parseUnomiVersion / supportsTenants', () => {
     ['3.0.1', { major: 3, minor: 0, patch: 1 }],
     ['3.1', { major: 3, minor: 1, patch: 0 }],
     ['3.1.0-SNAPSHOT', { major: 3, minor: 1, patch: 0 }],
+    ['4.0', { major: 4, minor: 0, patch: 0 }],
+    ['4.0.0-SNAPSHOT', { major: 4, minor: 0, patch: 0 }],
     ['3.2.1', { major: 3, minor: 2, patch: 1 }],
   ])('parses %s', (raw, expected) => {
     expect(parseUnomiVersion(raw)).toMatchObject(expected);
@@ -127,14 +129,15 @@ describe('parseUnomiVersion / supportsTenants', () => {
     ['3', false],
     ['3.0', false],
     ['3.0.9', false],
-    ['3.1', true],
-    ['3.1.0-SNAPSHOT', true],
-    ['3.2', true],
+    ['3.1', false],
+    ['3.1.0-SNAPSHOT', false],
+    ['3.2', false],
     ['4.0', true],
+    ['4.0.0-SNAPSHOT', true],
   ])('supportsTenants for UNOMI_VERSION=%s → %s', (version, expected) => {
     process.env.UNOMI_VERSION = version;
     expect(supportsTenants()).toBe(expected);
-    expect(isUnomiAtLeast(3, 1)).toBe(expected);
+    expect(isUnomiAtLeast(4, 0)).toBe(expected);
   });
 });
 
@@ -163,7 +166,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
     };
   }> = [
     {
-      name: '<3.1 × SaaS, no tenants',
+      name: '<4.0 × SaaS, no tenants',
       version: '3.0',
       deployment: 'multi-tenant',
       tenantsExist: false,
@@ -176,7 +179,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × SaaS, tenants exist (still no tenant UI)',
+      name: '<4.0 × SaaS, tenants exist (still no tenant UI)',
       version: '2',
       deployment: 'multi-tenant',
       tenantsExist: true,
@@ -189,7 +192,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × on-prem, no tenants',
+      name: '<4.0 × on-prem, no tenants',
       version: '3',
       deployment: 'on-premise',
       tenantsExist: false,
@@ -202,7 +205,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × on-prem, tenants exist (UI still off)',
+      name: '<4.0 × on-prem, tenants exist (UI still off)',
       version: '3.0.1',
       deployment: 'on-premise',
       tenantsExist: true,
@@ -215,8 +218,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × SaaS, no tenants',
-      version: '3.1',
+      name: '>=4.0 × SaaS, no tenants',
+      version: '4.0',
       deployment: 'multi-tenant',
       tenantsExist: false,
       expect: {
@@ -228,8 +231,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × SaaS, tenants exist (JWT path; no admin UI)',
-      version: '3.1',
+      name: '>=4.0 × SaaS, tenants exist (JWT path; no admin UI)',
+      version: '4.0',
       deployment: 'multi-tenant',
       tenantsExist: true,
       expect: {
@@ -241,8 +244,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × on-prem, no tenants (bootstrap → system admin only)',
-      version: '3.1',
+      name: '>=4.0 × on-prem, no tenants (bootstrap → system admin only)',
+      version: '4.0',
       deployment: 'on-premise',
       tenantsExist: false,
       expect: {
@@ -254,8 +257,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × on-prem, tenants exist (full tenant admin UI)',
-      version: '3.2',
+      name: '>=4.0 × on-prem, tenants exist (full tenant admin UI)',
+      version: '4.0',
       deployment: 'on-premise',
       tenantsExist: true,
       expect: {
