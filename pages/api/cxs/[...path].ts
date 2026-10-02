@@ -3,16 +3,27 @@ import { DEFAULT_DEPLOYMENT_TYPE } from '@/config/env-defaults';
 import { getUnomiConfig, getAuthHeaders, getAuthCredentials, isUnomiV3, hasV3Credentials } from '@/lib/unomi-config';
 import { getDefaultFeatureFlags, DeploymentType } from '@/config/feature-flags';
 import { createHandler, APIError } from '@/lib/api-middleware';
+import { requireAuthIfSaaS } from '@/lib/api-auth';
+import {
+  assertCxsRequestIsolation,
+  isUnomiSystemEndpoint,
+  mustUseTenantUnomiCredentials,
+} from '@/lib/cxs-request-guard';
 
 export default createHandler({
-  // All HTTP methods allowed — proxied to Unomi
+  // Site ingest goes through the gateway. This catch-all is the admin BFF.
   handler: async (req, res) => {
+    if (!requireAuthIfSaaS(req, res)) {
+      return;
+    }
     const { method, body } = req;
     const { path } = req.query;
 
     // Join the path segments to create the full path
     const fullPath = Array.isArray(path) ? path.join('/') : (path as string);
     const endpoint = `/cxs/${fullPath}`;
+
+    assertCxsRequestIsolation(req, endpoint);
 
     // Check feature flags for restricted endpoints
     const deploymentType = (process.env.DEPLOYMENT_TYPE || DEFAULT_DEPLOYMENT_TYPE) as DeploymentType;
@@ -26,7 +37,7 @@ export default createHandler({
     const config = getUnomiConfig(req);
 
     // Determine authentication based on endpoint type and V3 configuration
-    const isSystemEndpoint = endpoint.includes('/tenants') || endpoint.includes('/system');
+    const isSystemEndpoint = isUnomiSystemEndpoint(endpoint);
     const isPublicEndpoint = endpoint.includes('/context.json') || endpoint.includes('/eventcollector');
 
     let auth: { username: string; password: string } | undefined;
@@ -55,13 +66,30 @@ export default createHandler({
         const authCreds = await getAuthCredentials(endpoint, req);
         if (authCreds) {
           auth = authCreds;
+        } else if (config.tenantId) {
+          throw new APIError(
+            401,
+            'Tenant Unomi credentials unavailable. Re-open CDP from SaaS (handoff) and retry.',
+          );
         }
       }
+    } else if (mustUseTenantUnomiCredentials(endpoint)) {
+      throw new APIError(
+        401,
+        'Tenant Unomi credentials unavailable. Re-open CDP from SaaS (handoff) and retry.',
+      );
     } else {
       auth = {
         username: config.systemUser,
         password: config.systemPassword
       };
+    }
+
+    if (mustUseTenantUnomiCredentials(endpoint) && !isPublicEndpoint && !auth) {
+      throw new APIError(
+        401,
+        'Tenant Unomi credentials unavailable. Re-open CDP from SaaS (handoff) and retry.',
+      );
     }
 
     try {
