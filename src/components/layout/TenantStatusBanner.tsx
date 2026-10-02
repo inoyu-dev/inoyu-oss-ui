@@ -14,8 +14,8 @@ interface TenantStatus {
 }
 
 /**
- * Destructive banner for on-prem Unomi 3.1+ when a configured tenant is broken.
- * Hidden for Unomi &lt; 3.1, SaaS (JWT), and on-prem setup (no tenant yet — ActiveTenantBanner handles that).
+ * Destructive banner for on-prem Unomi 4.0+ when a configured tenant is broken.
+ * Hidden for Unomi &lt; 4.0, SaaS (JWT), and on-prem setup (no tenant yet — ActiveTenantBanner handles that).
  */
 const TenantStatusBanner: React.FC = () => {
   const { t } = useTranslation('common');
@@ -92,7 +92,7 @@ const TenantStatusBanner: React.FC = () => {
     return null;
   }
 
-  // Pre-3.1 and SaaS: no tenant status banner
+  // Pre-4.0 and SaaS: no tenant status banner
   if (!tenantStatus.supportsTenants || !tenantStatus.tenantAdminEnabled) {
     return null;
   }
