@@ -64,7 +64,7 @@ const ActiveTenantBanner: React.FC = () => {
     }
   }, [featureFlags.tenantAdmin, flagsLoading, loadActiveTenant]);
 
-  // On-prem 3.1+: redirect admins with no tenant to /tenants (once)
+  // On-prem 4.0+: redirect admins with no tenant to /tenants (once)
   useEffect(() => {
     if (!loaded || flagsLoading || adminLoading || redirectedRef.current) {
       return;

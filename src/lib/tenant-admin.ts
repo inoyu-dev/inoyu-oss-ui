@@ -24,8 +24,8 @@ export function isTenantAdminEnabled(): boolean {
 }
 
 /**
- * Show tenant admin UI / APIs only for Unomi >= 3.1 on-prem (managed multi-tenant).
- * SaaS (dynamic multi-tenant) and Unomi &lt; 3.1 never get this chrome.
+ * Show tenant admin UI / APIs only for Unomi >= 4.0 on-prem (managed multi-tenant).
+ * SaaS (dynamic multi-tenant) and Unomi &lt; 4.0 never get this chrome.
  */
 export function isTenantAdminUiEnabled(): boolean {
   return supportsTenants() && isTenantAdminEnabled();

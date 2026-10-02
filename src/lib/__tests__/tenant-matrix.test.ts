@@ -1,6 +1,6 @@
 /**
  * Tenant mode matrix tests:
- *   Unomi version (>= 3.1 vs < 3.1) × deployment (SaaS multi-tenant vs on-premise)
+ *   Unomi version (>= 4.0 with tenants vs < 4.0) × deployment (SaaS multi-tenant vs on-premise)
  * Plus first-login bootstrap (system admin only when no tenants).
  */
 
@@ -82,11 +82,11 @@ describe('code defaults when env unset (env-defaults.ts)', () => {
     restoreEnv(envSnap);
   });
 
-  it('defaults to Unomi 3.1 + on-premise (tenant admin UI on)', () => {
+  it('defaults to Unomi 4.0 + on-premise (tenant admin UI on)', () => {
     expect(supportsTenants()).toBe(true);
     expect(isTenantAdminEnabled()).toBe(true);
     expect(isTenantAdminUiEnabled()).toBe(true);
-    expect(getUnomiConfig().version).toBe('3.1');
+    expect(getUnomiConfig().version).toBe('4.0');
     expect(getTenantUiCapabilities(false)).toMatchObject({
       supportsTenants: true,
       deploymentTenantAdmin: true,
@@ -114,8 +114,8 @@ describe('parseUnomiVersion / supportsTenants', () => {
     ['3', { major: 3, minor: 0, patch: 0 }],
     ['3.0', { major: 3, minor: 0, patch: 0 }],
     ['3.0.1', { major: 3, minor: 0, patch: 1 }],
-    ['3.1', { major: 3, minor: 1, patch: 0 }],
-    ['3.1.0-SNAPSHOT', { major: 3, minor: 1, patch: 0 }],
+    ['4.0', { major: 4, minor: 0, patch: 0 }],
+    ['4.0.0-SNAPSHOT', { major: 4, minor: 0, patch: 0 }],
     ['3.2.1', { major: 3, minor: 2, patch: 1 }],
   ])('parses %s', (raw, expected) => {
     expect(parseUnomiVersion(raw)).toMatchObject(expected);
@@ -127,14 +127,15 @@ describe('parseUnomiVersion / supportsTenants', () => {
     ['3', false],
     ['3.0', false],
     ['3.0.9', false],
-    ['3.1', true],
-    ['3.1.0-SNAPSHOT', true],
-    ['3.2', true],
+    // Historical renamed-away line — must stay false (tenants are 4.0+).
+    ['3.1', false],
+    ['3.2', false],
     ['4.0', true],
+    ['4.0.0-SNAPSHOT', true],
   ])('supportsTenants for UNOMI_VERSION=%s → %s', (version, expected) => {
     process.env.UNOMI_VERSION = version;
     expect(supportsTenants()).toBe(expected);
-    expect(isUnomiAtLeast(3, 1)).toBe(expected);
+    expect(isUnomiAtLeast(4, 0)).toBe(expected);
   });
 });
 
@@ -163,7 +164,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
     };
   }> = [
     {
-      name: '<3.1 × SaaS, no tenants',
+      name: '<4.0 × SaaS, no tenants',
       version: '3.0',
       deployment: 'multi-tenant',
       tenantsExist: false,
@@ -176,7 +177,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × SaaS, tenants exist (still no tenant UI)',
+      name: '<4.0 × SaaS, tenants exist (still no tenant UI)',
       version: '2',
       deployment: 'multi-tenant',
       tenantsExist: true,
@@ -189,7 +190,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × on-prem, no tenants',
+      name: '<4.0 × on-prem, no tenants',
       version: '3',
       deployment: 'on-premise',
       tenantsExist: false,
@@ -202,7 +203,7 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '<3.1 × on-prem, tenants exist (UI still off)',
+      name: '<4.0 × on-prem, tenants exist (UI still off)',
       version: '3.0.1',
       deployment: 'on-premise',
       tenantsExist: true,
@@ -215,8 +216,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × SaaS, no tenants',
-      version: '3.1',
+      name: '>=4.0 × SaaS, no tenants',
+      version: '4.0',
       deployment: 'multi-tenant',
       tenantsExist: false,
       expect: {
@@ -228,8 +229,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × SaaS, tenants exist (JWT path; no admin UI)',
-      version: '3.1',
+      name: '>=4.0 × SaaS, tenants exist (JWT path; no admin UI)',
+      version: '4.0',
       deployment: 'multi-tenant',
       tenantsExist: true,
       expect: {
@@ -241,8 +242,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × on-prem, no tenants (bootstrap → system admin only)',
-      version: '3.1',
+      name: '>=4.0 × on-prem, no tenants (bootstrap → system admin only)',
+      version: '4.0',
       deployment: 'on-premise',
       tenantsExist: false,
       expect: {
@@ -254,8 +255,8 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
       },
     },
     {
-      name: '>=3.1 × on-prem, tenants exist (full tenant admin UI)',
-      version: '3.2',
+      name: '>=4.0 × on-prem, tenants exist (full tenant admin UI)',
+      version: '4.0',
       deployment: 'on-premise',
       tenantsExist: true,
       expect: {
@@ -275,30 +276,30 @@ describe('tenant UI matrix (Unomi × deployment)', () => {
     expect(getTenantUiCapabilities(tenantsExist)).toEqual(expected);
   });
 
-  it('TENANT_ADMIN_ENABLED=true on SaaS still enables deployment flag, but UI needs 3.1+', () => {
+  it('TENANT_ADMIN_ENABLED=true on SaaS still enables deployment flag, but UI needs 4.0+', () => {
     setMatrixEnv({ version: '3.0', deployment: 'multi-tenant', tenantAdminEnabled: 'true' });
     expect(isTenantAdminEnabled()).toBe(true);
     expect(isTenantAdminUiEnabled()).toBe(false);
 
-    setMatrixEnv({ version: '3.1', deployment: 'multi-tenant', tenantAdminEnabled: 'true' });
+    setMatrixEnv({ version: '4.0', deployment: 'multi-tenant', tenantAdminEnabled: 'true' });
     expect(isTenantAdminUiEnabled()).toBe(true);
   });
 
-  it('TENANT_ADMIN_ENABLED=false disables on-prem UI even on 3.1+', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise', tenantAdminEnabled: 'false' });
+  it('TENANT_ADMIN_ENABLED=false disables on-prem UI even on 4.0+', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise', tenantAdminEnabled: 'false' });
     expect(isTenantAdminEnabled()).toBe(false);
     expect(isTenantAdminUiEnabled()).toBe(false);
     expect(() => requireTenantAdmin()).toThrow(/Tenant management is not available/);
   });
 
-  it('requireTenantAdmin throws outside on-prem 3.1+', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'multi-tenant' });
+  it('requireTenantAdmin throws outside on-prem 4.0+', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'multi-tenant' });
     expect(() => requireTenantAdmin()).toThrow(/Tenant management is not available/);
 
     setMatrixEnv({ version: '3.0', deployment: 'on-premise' });
     expect(() => requireTenantAdmin()).toThrow(/Tenant management is not available/);
 
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise' });
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise' });
     expect(() => requireTenantAdmin()).not.toThrow();
   });
 });
@@ -325,37 +326,37 @@ describe('getUnomiConfig admin_tenant_context (SaaS vs on-prem)', () => {
     },
   };
 
-  it('on-prem 3.1+ uses admin_tenant_context cookie', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise' });
+  it('on-prem 4.0+ uses admin_tenant_context cookie', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise' });
     const config = getUnomiConfig(adminCookie);
     expect(config.tenantId).toBe('switched-tenant');
     expect(config.publicApiKey).toBe('pub');
   });
 
-  it('on-prem 3.1+ ignores UNOMI_TENANT_ID without admin context', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise', tenantId: 'env-tenant' });
+  it('on-prem 4.0+ ignores UNOMI_TENANT_ID without admin context', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise', tenantId: 'env-tenant' });
     expect(getUnomiConfig().tenantId).toBeUndefined();
   });
 
-  it('on-prem 3.1+ prefers admin context over UNOMI_TENANT_ID', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise', tenantId: 'env-tenant' });
+  it('on-prem 4.0+ prefers admin context over UNOMI_TENANT_ID', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise', tenantId: 'env-tenant' });
     const config = getUnomiConfig(adminCookie);
     expect(config.tenantId).toBe('switched-tenant');
   });
 
-  it('SaaS 3.1+ ignores admin_tenant_context cookie', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'multi-tenant', tenantId: 'env-tenant' });
+  it('SaaS 4.0+ ignores admin_tenant_context cookie', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'multi-tenant', tenantId: 'env-tenant' });
     const config = getUnomiConfig(adminCookie);
     expect(config.tenantId).toBe('env-tenant');
     expect(config.publicApiKey).toBeUndefined();
   });
 
-  it('SaaS 3.1+ still uses UNOMI_TENANT_ID as fallback', () => {
-    setMatrixEnv({ version: '3.1', deployment: 'multi-tenant', tenantId: 'env-tenant' });
+  it('SaaS 4.0+ still uses UNOMI_TENANT_ID as fallback', () => {
+    setMatrixEnv({ version: '4.0', deployment: 'multi-tenant', tenantId: 'env-tenant' });
     expect(getUnomiConfig().tenantId).toBe('env-tenant');
   });
 
-  it('Unomi < 3.1 ignores admin_tenant_context even on-prem', () => {
+  it('Unomi < 4.0 ignores admin_tenant_context even on-prem', () => {
     setMatrixEnv({ version: '3.0', deployment: 'on-premise', tenantId: 'env-tenant' });
     const config = getUnomiConfig(adminCookie);
     expect(config.tenantId).toBe('env-tenant');
@@ -378,14 +379,14 @@ describe('hasAnyTenants / login bootstrap', () => {
     restoreEnv(envSnap);
   });
 
-  it('returns false when Unomi < 3.1 without calling Unomi', async () => {
+  it('returns false when Unomi < 4.0 without calling Unomi', async () => {
     setMatrixEnv({ version: '3.0', deployment: 'on-premise' });
     await expect(hasAnyTenants()).resolves.toBe(false);
     expect(mockedAxios.get).not.toHaveBeenCalled();
   });
 
   it('returns false when tenant list is empty (system-admin-only bootstrap)', async () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise' });
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise' });
     mockedAxios.get.mockResolvedValueOnce({ data: [] });
     await expect(hasAnyTenants()).resolves.toBe(false);
     expect(getTenantUiCapabilities(false).systemAdminOnly).toBe(true);
@@ -393,7 +394,7 @@ describe('hasAnyTenants / login bootstrap', () => {
   });
 
   it('returns true when Unomi has tenants', async () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise' });
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise' });
     mockedAxios.get.mockResolvedValueOnce({
       data: [{ tenantId: 'acme' }],
     });
@@ -403,7 +404,7 @@ describe('hasAnyTenants / login bootstrap', () => {
   });
 
   it('returns false when Unomi list call fails', async () => {
-    setMatrixEnv({ version: '3.1', deployment: 'on-premise' });
+    setMatrixEnv({ version: '4.0', deployment: 'on-premise' });
     mockedAxios.get.mockRejectedValueOnce(new Error('network'));
     await expect(hasAnyTenants()).resolves.toBe(false);
   });

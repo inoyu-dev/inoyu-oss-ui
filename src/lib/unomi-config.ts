@@ -314,7 +314,7 @@ export function isUnomiAtLeast(major: number, minor = 0): boolean {
  * Unomi &lt; 3.1 must not show tenant admin / switching UI.
  */
 export function supportsTenants(): boolean {
-  return isUnomiAtLeast(3, 1);
+  return isUnomiAtLeast(4, 0);
 }
 
 /**
