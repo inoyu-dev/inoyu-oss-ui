@@ -446,5 +446,8 @@
   "Tenant is not available": "El inquilino no está disponible",
   "Some features may not work correctly. Please check your Unomi V3 configuration.": "Algunas funciones pueden no funcionar correctamente. Por favor verifique su configuración de Unomi V3.",
   "Configured tenant": "Inquilino configurado",
-  "Checking permissions...": "Verificando permisos..."
+  "Checking permissions...": "Verificando permisos...",
+  "Checking plugin availability...": "Comprobando disponibilidad del complemento...",
+  "Plugin unavailable": "Complemento no disponible",
+  "The {{plugin}} Unomi plugin is not installed or not responding on this server.": "The {{plugin}} Unomi plugin is not installed or not responding on this server."
 }

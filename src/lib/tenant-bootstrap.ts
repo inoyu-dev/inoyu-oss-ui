@@ -32,7 +32,7 @@ export async function hasAnyTenants(): Promise<boolean> {
 }
 
 export type TenantUiCapabilities = {
-  /** Unomi >= 3.1 */
+  /** Unomi >= 4.0 */
   supportsTenants: boolean;
   /** Deployment allows tenant admin (on-prem), ignoring Unomi version */
   deploymentTenantAdmin: boolean;

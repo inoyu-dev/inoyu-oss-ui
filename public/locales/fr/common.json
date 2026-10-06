@@ -446,5 +446,8 @@
   "Tenant is not available": "Le locataire n'est pas disponible",
   "Some features may not work correctly. Please check your Unomi V3 configuration.": "Certaines fonctionnalités peuvent ne pas fonctionner correctement. Veuillez vérifier votre configuration Unomi V3.",
   "Configured tenant": "Locataire configuré",
-  "Checking permissions...": "Vérification des permissions..."
+  "Checking permissions...": "Vérification des permissions...",
+  "Checking plugin availability...": "Vérification de la disponibilité du plugin...",
+  "Plugin unavailable": "Plugin indisponible",
+  "The {{plugin}} Unomi plugin is not installed or not responding on this server.": "The {{plugin}} Unomi plugin is not installed or not responding on this server."
 }

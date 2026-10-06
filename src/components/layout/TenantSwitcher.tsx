@@ -28,8 +28,8 @@ interface TenantSwitcherProps {
 }
 
 /**
- * Sidebar tenant switcher for Unomi 3.1+ on-prem (managed multi-tenant) admins only.
- * Hidden for SaaS and Unomi &lt; 3.1 (featureFlags.tenantAdmin already encodes that).
+ * Sidebar tenant switcher for Unomi 4.0+ on-prem (managed multi-tenant) admins only.
+ * Hidden for SaaS and Unomi &lt; 4.0 (featureFlags.tenantAdmin already encodes that).
  */
 const TenantSwitcher: React.FC<TenantSwitcherProps> = ({ isCollapsed }) => {
   const { t } = useTranslation('common');

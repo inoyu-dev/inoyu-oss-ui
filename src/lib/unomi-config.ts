@@ -30,7 +30,10 @@ export interface UnomiV3Config {
   systemPassword: string;
 }
 
-type RequestWithCookies = { cookies?: Partial<{ [key: string]: string }> };
+type RequestWithCookies = {
+  cookies?: Partial<{ [key: string]: string }>;
+  headers?: Partial<{ [key: string]: string | string[] | undefined }>;
+};
 
 interface TenantApiKeys {
   publicApiKey?: string;
@@ -93,6 +96,24 @@ export function getSessionTenantIdFromToken(req?: RequestWithCookies): string | 
     return null;
   }
   return decoded!.tenantId!;
+}
+
+/**
+ * Explicit tenant from API clients (harness, personalization.js, BFF).
+ * Prefer over env defaults so CXS proxy does not fall back to system credentials.
+ */
+export function getTenantIdFromHeaders(req?: RequestWithCookies): string | null {
+  if (!req?.headers) {
+    return null;
+  }
+  const headers = req.headers as Record<string, string | string[] | undefined>;
+  const raw = headers['x-tenant-id'] ?? headers['x-inoyu-tenant-id'];
+  const value = Array.isArray(raw) ? raw[0] : raw;
+  if (typeof value !== 'string') {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed || null;
 }
 
 function getCachedTenantKeys(tenantId: string): TenantApiKeys | null {
@@ -194,7 +215,10 @@ async function fetchTenantApiKeys(tenantId: string): Promise<TenantApiKeys | nul
   }
 
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_UNOMI_URL || DEFAULT_UNOMI_URL;
+    // Bracket access so Turbopack/Next cannot inline these to undefined at build.
+    const env = process.env;
+    const baseUrl =
+      env['UNOMI_URL'] || env['NEXT_PUBLIC_UNOMI_URL'] || DEFAULT_UNOMI_URL;
     const systemUser = process.env.UNOMI_USER || DEFAULT_UNOMI_USER;
     const systemPassword = process.env.UNOMI_PASSWORD || DEFAULT_UNOMI_PASSWORD;
 
@@ -253,23 +277,39 @@ function runtimeKeysApplyToTenant(tenantId: string | undefined): boolean {
  * Get tenant context from request (for server-side use)
  * Checks for admin "login as tenant" context in cookies
  */
+function parseTenantContextCookie(
+  contextStr: string | undefined,
+): { tenantId?: string; publicApiKey?: string; privateApiKey?: string; name?: string } | null {
+  if (!contextStr) {
+    return null;
+  }
+  try {
+    try {
+      return JSON.parse(contextStr);
+    } catch {
+      // Cookie may still be URI-encoded depending on the client/parser.
+      return JSON.parse(decodeURIComponent(contextStr));
+    }
+  } catch {
+    return null;
+  }
+}
+
 export function getTenantContextFromRequest(req?: RequestWithCookies): { tenantId?: string; publicApiKey?: string; privateApiKey?: string; name?: string } | null {
   if (!req?.cookies) {
     return null;
   }
 
-  try {
-    const contextStr = req.cookies['admin_tenant_context'];
-    if (contextStr) {
-      try {
-        return JSON.parse(contextStr);
-      } catch {
-        // Cookie may still be URI-encoded depending on the client/parser.
-        return JSON.parse(decodeURIComponent(contextStr));
-      }
-    }
-  } catch {
-    // Ignore parse errors
+  // On-prem admin "login as tenant"
+  const admin = parseTenantContextCookie(req.cookies['admin_tenant_context']);
+  if (admin?.tenantId) {
+    return admin;
+  }
+
+  // SaaS Open CDP handoff — carries plaintext Unomi keys (not re-readable from Unomi).
+  const saas = parseTenantContextCookie(req.cookies['saas_tenant_context']);
+  if (saas?.tenantId) {
+    return saas;
   }
 
   return null;
@@ -283,7 +323,7 @@ export interface ParsedUnomiVersion {
 }
 
 /**
- * Parse UNOMI_VERSION (e.g. "3", "3.0", "3.1.0-SNAPSHOT") into numeric parts.
+ * Parse UNOMI_VERSION (e.g. "3", "3.0", "4.0.0-SNAPSHOT") into numeric parts.
  * Bare "3" is treated as 3.0.0.
  */
 export function parseUnomiVersion(raw?: string): ParsedUnomiVersion {
@@ -310,16 +350,16 @@ export function isUnomiAtLeast(major: number, minor = 0): boolean {
 }
 
 /**
- * Unomi 3.1+ supports multi-tenant APIs used by this UI.
- * Unomi &lt; 3.1 must not show tenant admin / switching UI.
+ * Unomi 4.0+ supports multi-tenant APIs used by this UI.
+ * Unomi &lt; 4.0 must not show tenant admin / switching UI.
  */
 export function supportsTenants(): boolean {
-  return isUnomiAtLeast(3, 1);
+  return isUnomiAtLeast(4, 0);
 }
 
 /**
- * Admin login-as context is only valid for Unomi 3.1+ on-prem (managed multi-tenant).
- * SaaS and pre-3.1 must ignore stale admin_tenant_context cookies.
+ * Admin login-as context is only valid for Unomi 4.0+ on-prem (managed multi-tenant).
+ * SaaS and pre-4.0 must ignore stale admin_tenant_context cookies.
  */
 function isAdminTenantContextAllowed(): boolean {
   if (!supportsTenants()) {
@@ -345,19 +385,23 @@ export function getUnomiConfig(req?: RequestWithCookies): UnomiV3Config {
 
   const allowAdminTenantContext = isAdminTenantContextAllowed();
 
-  let adminTenantContext: { tenantId?: string; publicApiKey?: string; privateApiKey?: string; name?: string } | null = null;
+  let cookieTenantContext: { tenantId?: string; publicApiKey?: string; privateApiKey?: string; name?: string } | null = null;
   let sessionTenantId: string | null = null;
 
   if (req) {
-    if (allowAdminTenantContext) {
-      adminTenantContext = getTenantContextFromRequest(req);
+    // Always prefer cookie context when present (on-prem admin OR SaaS handoff keys).
+    cookieTenantContext = getTenantContextFromRequest(req);
+    if (cookieTenantContext && !allowAdminTenantContext) {
+      // On SaaS, only accept saas_tenant_context (admin cookie ignored).
+      const saasOnly = parseTenantContextCookie(req.cookies?.['saas_tenant_context'] || undefined);
+      cookieTenantContext = saasOnly;
     }
     sessionTenantId = getSessionTenantIdFromToken(req);
   } else if (typeof window !== 'undefined' && allowAdminTenantContext) {
     try {
       const contextStr = localStorage.getItem('admin_tenant_context');
       if (contextStr) {
-        adminTenantContext = JSON.parse(contextStr);
+        cookieTenantContext = JSON.parse(contextStr);
       }
     } catch {
       // Ignore parse errors
@@ -368,8 +412,16 @@ export function getUnomiConfig(req?: RequestWithCookies): UnomiV3Config {
   // On-prem tenant admin: do not treat UNOMI_TENANT_ID as the active tenant —
   // admins must create/switch via /tenants + login-as.
   const envTenantId = allowAdminTenantContext ? undefined : process.env.UNOMI_TENANT_ID;
+  const headerTenantId = req ? getTenantIdFromHeaders(req) : null;
+  const remembered =
+    cookieTenantContext?.tenantId || headerTenantId || sessionTenantId
+      ? getRememberedTenantApiKeys(
+          (cookieTenantContext?.tenantId || headerTenantId || sessionTenantId) as string,
+        )
+      : null;
   const tenantId =
-    adminTenantContext?.tenantId ||
+    cookieTenantContext?.tenantId ||
+    headerTenantId ||
     sessionTenantId ||
     runtimeConfig.tenantId ||
     envTenantId;
@@ -378,16 +430,25 @@ export function getUnomiConfig(req?: RequestWithCookies): UnomiV3Config {
 
   return {
     version: process.env.UNOMI_VERSION || DEFAULT_UNOMI_VERSION,
-    publicApiKey: adminTenantContext?.publicApiKey || (useRuntimeKeys ? runtimeConfig.publicApiKey : undefined),
-    privateApiKey: adminTenantContext?.privateApiKey || (useRuntimeKeys ? runtimeConfig.privateApiKey : undefined),
+    publicApiKey:
+      cookieTenantContext?.publicApiKey ||
+      remembered?.publicApiKey ||
+      (useRuntimeKeys ? runtimeConfig.publicApiKey : undefined),
+    privateApiKey:
+      cookieTenantContext?.privateApiKey ||
+      remembered?.privateApiKey ||
+      (useRuntimeKeys ? runtimeConfig.privateApiKey : undefined),
     tenantId,
-    baseUrl: process.env.NEXT_PUBLIC_UNOMI_URL || DEFAULT_UNOMI_URL,
-    systemUser: process.env.UNOMI_USER || DEFAULT_UNOMI_USER,
-    systemPassword: process.env.UNOMI_PASSWORD || DEFAULT_UNOMI_PASSWORD,
+    baseUrl:
+      process.env['UNOMI_URL'] ||
+      process.env['NEXT_PUBLIC_UNOMI_URL'] ||
+      DEFAULT_UNOMI_URL,
+    systemUser: process.env['UNOMI_USER'] || DEFAULT_UNOMI_USER,
+    systemPassword: process.env['UNOMI_PASSWORD'] || DEFAULT_UNOMI_PASSWORD,
   };
 }
 
-/** True when Unomi major version is 3 or higher (includes 3.0 and 3.1+). */
+/** True when Unomi major version is 3 or higher (includes 3.0 and 4.0+). */
 export function isUnomiV3(): boolean {
   return isUnomiAtLeast(3, 0);
 }
@@ -408,7 +469,13 @@ export function hasV3Credentials(req?: RequestWithCookies): boolean {
     const allowAdmin = isAdminTenantContextAllowed();
     const adminContext = allowAdmin ? getTenantContextFromRequest(req) : null;
     const decoded = decodeSessionToken(req);
-    if (adminContext?.tenantId || shouldUseSessionTenantForUnomi(decoded)) {
+    const headerTenant = getTenantIdFromHeaders(req);
+    if (
+      adminContext?.tenantId ||
+      shouldUseSessionTenantForUnomi(decoded) ||
+      headerTenant
+    ) {
+      // Keys are resolved server-side via /cxs/tenants/{id} (system auth).
       return true;
     }
     if (runtimeKeysApplyToTenant(config.tenantId)) {
@@ -494,6 +561,14 @@ export async function getAuthCredentials(endpoint: string, req?: RequestWithCook
           username: config.tenantId,
           password: keys.privateApiKey,
         };
+      }
+      // Do not fall back to system credentials for a tenant-scoped request —
+      // that writes items into tenantId=system and breaks SaaS isolation.
+      const headerTenant = getTenantIdFromHeaders(req);
+      const sessionTenant = getSessionTenantIdFromToken(req);
+      const cookieTenant = getTenantContextFromRequest(req)?.tenantId;
+      if (headerTenant || sessionTenant || cookieTenant) {
+        return null;
       }
     }
 

@@ -43,7 +43,7 @@ describe('assertCxsRequestIsolation', () => {
 
   beforeEach(() => {
     envSnap = snapshotEnv();
-    process.env.UNOMI_VERSION = '3.1';
+    process.env.UNOMI_VERSION = '4.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     delete process.env.TENANT_ADMIN_ENABLED;
   });
@@ -58,7 +58,7 @@ describe('assertCxsRequestIsolation', () => {
     );
   });
 
-  it('does not require tenant scope on Unomi < 3.1 SaaS', () => {
+  it('does not require tenant scope on Unomi < 4.0 SaaS', () => {
     process.env.UNOMI_VERSION = '2.2';
     expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).not.toThrow();
   });
@@ -68,7 +68,7 @@ describe('assertCxsRequestIsolation', () => {
     expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).not.toThrow();
   });
 
-  it('requires a real tenant on SaaS 3.1+ data-plane paths', () => {
+  it('requires a real tenant on SaaS 4.0+ data-plane paths', () => {
     expect(() => assertCxsRequestIsolation(req(), '/cxs/segments')).toThrow(/Tenant scope required/);
     expect(() =>
       assertCxsRequestIsolation(req({ 'x-tenant-id': 't_bakery' }), '/cxs/segments'),
@@ -86,7 +86,7 @@ describe('mustUseTenantUnomiCredentials', () => {
 
   beforeEach(() => {
     envSnap = snapshotEnv();
-    process.env.UNOMI_VERSION = '3.1';
+    process.env.UNOMI_VERSION = '4.0';
   });
 
   afterEach(() => {
@@ -99,7 +99,7 @@ describe('mustUseTenantUnomiCredentials', () => {
     expect(mustUseTenantUnomiCredentials('/cxs/tenants')).toBe(false);
   });
 
-  it('is false on Unomi < 3.1 even for SaaS', () => {
+  it('is false on Unomi < 4.0 even for SaaS', () => {
     process.env.UNOMI_VERSION = '2.2';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustUseTenantUnomiCredentials('/cxs/profiles')).toBe(false);

@@ -153,6 +153,7 @@ export const CORE_NAVIGATION_GROUPS = [
         icon: navIcon(Code),
         label: 'Groovy Actions',
         featureFlag: 'groovyActions' as const,
+        unomiPlugin: 'groovyActions',
       },
     ],
   },

@@ -10,6 +10,7 @@ import { NavGroup, NavGroupProps } from './NavGroup';
 import { NavItemProps } from './NavItem';
 import TenantSwitcher from './TenantSwitcher';
 import { useFeatureFlags } from '@/hooks/useFeatureFlags';
+import { useUnomiPlugins } from '@/hooks/useUnomiPlugins';
 import { FeatureFlags } from '@/config/feature-flags';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useNavigationRegistry } from '@/plugins/useNavigationRegistry';
@@ -29,6 +30,7 @@ export const useSidebar = () => useContext(SidebarContext);
 const Sidebar: React.FC = () => {
   const { t } = useTranslation();
   const { featureFlags } = useFeatureFlags();
+  const { plugins: unomiPlugins, isLoading: unomiPluginsLoading } = useUnomiPlugins();
   const { isAdmin } = useAdmin();
   const { getNavigationExtensions } = useNavigationRegistry();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -88,6 +90,17 @@ const Sidebar: React.FC = () => {
      * - Feature-flag gating (disabled + reason)
      * - Admin-only visibility
      */
+    const isUnomiPluginVisible = (item: NavItemProps): boolean => {
+      if (!item.unomiPlugin) {
+        return true;
+      }
+      // Hide until probed so we never flash a plugin that is not installed
+      if (unomiPluginsLoading) {
+        return false;
+      }
+      return Boolean(unomiPlugins[item.unomiPlugin]);
+    };
+
     const applyItemChecks = (item: NavItemProps): NavItemProps => {
       const flag = item.featureFlag as keyof FeatureFlags | undefined;
       const isEnabled = flag ? (isAdmin || featureFlags[flag]) : true;
@@ -106,12 +119,13 @@ const Sidebar: React.FC = () => {
 
     // Process groups: translate labels, apply item checks, merge injected items
     const processedGroups: NavGroupProps[] = pluginNav.groups.map((group) => {
-      // Hide admin-only / feature-flagged items the same way as plugin injections
+      // Hide admin-only / feature-flagged / missing-Unomi-plugin items
       let items = group.items
         .filter((item) => {
           if (item.adminOnly && !isAdmin) return false;
           const flag = item.featureFlag as keyof FeatureFlags | undefined;
           if (flag === 'tenantAdmin' && !featureFlags.tenantAdmin) return false;
+          if (!isUnomiPluginVisible(item)) return false;
           return true;
         })
         .map(applyItemChecks);
@@ -136,6 +150,7 @@ const Sidebar: React.FC = () => {
         if (injectedItem.adminOnly && !isAdmin) continue;
         const injectedFlag = injectedItem.featureFlag as keyof FeatureFlags | undefined;
         if (injectedFlag && !featureFlags[injectedFlag]) continue;
+        if (!isUnomiPluginVisible(injectedItem)) continue;
         items.push(applyItemChecks(injectedItem));
       }
 
@@ -151,7 +166,7 @@ const Sidebar: React.FC = () => {
       const visibleItems = group.items.filter(item => !item.disabled);
       return visibleItems.length > 0;
     });
-  }, [featureFlags, t, isAdmin, getNavigationExtensions]);
+  }, [featureFlags, unomiPlugins, unomiPluginsLoading, t, isAdmin, getNavigationExtensions]);
 
   // Restore scroll position after content is rendered
   useEffect(() => {
@@ -230,7 +245,7 @@ const Sidebar: React.FC = () => {
         ))}
       </nav>
 
-      {/* Tenant switcher (Unomi 3.1+ on-prem admin only) */}
+      {/* Tenant switcher (Unomi 4.0+ on-prem admin only) */}
       <TenantSwitcher isCollapsed={isCollapsed} />
 
       {/* Footer Section */}

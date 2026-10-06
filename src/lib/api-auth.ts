@@ -70,8 +70,8 @@ export function requireAuth(
 }
 
 /**
- * SaaS / hybrid Unomi 3.1+: require a session JWT.
- * On-prem and Unomi &lt; 3.1 keep existing unauthenticated-or-Basic operator flows.
+ * SaaS / hybrid Unomi 4.0+: require a session JWT.
+ * On-prem and Unomi &lt; 4.0 keep existing unauthenticated-or-Basic operator flows.
  */
 export function requireAuthIfSaaS(
   req: NextApiRequest,

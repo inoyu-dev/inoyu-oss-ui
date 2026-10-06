@@ -61,26 +61,26 @@ describe('mustRejectPlaceholderTenant', () => {
     restoreEnv(envSnap);
   });
 
-  it('is false on Unomi < 3.1 even when deployment is SaaS', () => {
+  it('is false on Unomi < 4.0 even when deployment is SaaS', () => {
     process.env.UNOMI_VERSION = '2.2';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustRejectPlaceholderTenant()).toBe(false);
   });
 
-  it('is false on Unomi 3.0 (tenants require 3.1+)', () => {
+  it('is false on Unomi 3.0 (tenants require 4.0+)', () => {
     process.env.UNOMI_VERSION = '3.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustRejectPlaceholderTenant()).toBe(false);
   });
 
-  it('is false on-premise even on Unomi 3.1', () => {
-    process.env.UNOMI_VERSION = '3.1';
+  it('is false on-premise even on Unomi 4.0', () => {
+    process.env.UNOMI_VERSION = '4.0';
     process.env.DEPLOYMENT_TYPE = 'on-premise';
     expect(mustRejectPlaceholderTenant()).toBe(false);
   });
 
-  it('is true for SaaS multi-tenant Unomi 3.1+', () => {
-    process.env.UNOMI_VERSION = '3.1';
+  it('is true for SaaS multi-tenant Unomi 4.0+', () => {
+    process.env.UNOMI_VERSION = '4.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     expect(mustRejectPlaceholderTenant()).toBe(true);
   });
@@ -91,7 +91,7 @@ describe('getTenantId', () => {
 
   beforeEach(() => {
     envSnap = snapshotEnv();
-    process.env.UNOMI_VERSION = '3.1';
+    process.env.UNOMI_VERSION = '4.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     process.env.JWT_SECRET = 'test-secret';
     delete process.env.DEFAULT_TENANT_ID;
@@ -117,7 +117,7 @@ describe('getTenantId', () => {
     expect(getTenantId(req({ headers: { 'x-inoyu-tenant-id': 't_site' } }))).toBe('t_site');
   });
 
-  it('always returns default on Unomi < 3.1', () => {
+  it('always returns default on Unomi < 4.0', () => {
     process.env.UNOMI_VERSION = '2.2';
     expect(getTenantId(req({ headers: { 'x-tenant-id': 't_site' } }))).toBe('default');
   });
@@ -132,7 +132,7 @@ describe('requireScopedTenantId', () => {
 
   beforeEach(() => {
     envSnap = snapshotEnv();
-    process.env.UNOMI_VERSION = '3.1';
+    process.env.UNOMI_VERSION = '4.0';
     process.env.DEPLOYMENT_TYPE = 'multi-tenant';
     process.env.JWT_SECRET = 'test-secret';
   });

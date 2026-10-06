@@ -39,6 +39,11 @@ export interface NavItemProps {
   targetGroup?: string;
   /** When true, item is only visible to admin users. */
   adminOnly?: boolean;
+  /**
+   * When set, item is hidden unless the named Unomi OSGi plugin is present
+   * (see `/api/config/unomi-plugins` and `registerUnomiPlugin`).
+   */
+  unomiPlugin?: string;
 }
 
 export const NavItem: React.FC<NavItemProps> = ({

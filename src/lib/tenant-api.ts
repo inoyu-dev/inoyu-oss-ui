@@ -19,7 +19,7 @@ interface UnomiApiKey {
   revoked?: boolean;
 }
 
-/** Unomi 3.1+ returns plaintext once via ApiKeyCreationResult.plainTextKey. */
+/** Unomi 4.0+ returns plaintext once via ApiKeyCreationResult.plainTextKey. */
 interface UnomiApiKeyCreationResult {
   apiKey?: UnomiApiKey;
   plainTextKey?: string;
@@ -174,7 +174,7 @@ export function assertTenantAdminAccess(req: NextApiRequest): void {
   requireTenantAdmin(req);
   requireAdmin(req);
   if (!supportsTenants()) {
-    throw new APIError(400, 'Tenant management requires Unomi 3.1+');
+    throw new APIError(400, 'Tenant management requires Unomi 4.0+');
   }
 }
 

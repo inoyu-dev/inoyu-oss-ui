@@ -1,10 +1,16 @@
 import React from 'react';
-import { NextPage } from 'next';
 import RegistryPage from '@/components/shared/RegistryPage';
+import UnomiPluginGate from '@/components/shared/UnomiPluginGate';
 import GroovyActionList from '@/components/groovy-actions/GroovyActionList';
 
-const GroovyActions: NextPage = () => (
-  <RegistryPage route="/groovy-actions" defaultComponent={GroovyActionList} />
+const GroovyActionsPageContent: React.FC = () => (
+  <UnomiPluginGate pluginId="groovyActions" pluginLabel="Groovy Actions">
+    <GroovyActionList />
+  </UnomiPluginGate>
 );
 
-export default GroovyActions;
+const GroovyActionsPage: React.FC = () => (
+  <RegistryPage route="/groovy-actions" defaultComponent={GroovyActionsPageContent} />
+);
+
+export default GroovyActionsPage;

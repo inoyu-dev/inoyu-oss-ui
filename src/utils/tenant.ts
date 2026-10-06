@@ -41,8 +41,8 @@ function sessionTenantId(req: NextApiRequest): string | undefined {
 }
 
 /**
- * SaaS / hybrid Unomi 3.1+ must never silently fall back to `default`.
- * Unomi &lt; 3.1 and on-prem keep the legacy default-tenant path.
+ * SaaS / hybrid Unomi 4.0+ must never silently fall back to `default`.
+ * Unomi &lt; 4.0 and on-prem keep the legacy default-tenant path.
  */
 export function mustRejectPlaceholderTenant(): boolean {
   if (!supportsTenants()) {
@@ -65,7 +65,7 @@ export function mustRejectPlaceholderTenant(): boolean {
 /**
  * Extracts tenantId from the request.
  * Session JWT wins over `x-tenant-id` so a caller cannot hop tenants with a header.
- * Unomi &lt; 3.1 always returns `default`.
+ * Unomi &lt; 4.0 always returns `default`.
  */
 export function getTenantId(req: NextApiRequest): string {
   if (!supportsTenants()) {
@@ -86,7 +86,7 @@ export function getTenantId(req: NextApiRequest): string {
 }
 
 /**
- * Require a real Unomi tenant id on SaaS/hybrid (Unomi 3.1+).
+ * Require a real Unomi tenant id on SaaS/hybrid (Unomi 4.0+).
  * Throws 401 when the resolved tenant is missing or `default`/`system`.
  */
 export function requireScopedTenantId(req: NextApiRequest): string {

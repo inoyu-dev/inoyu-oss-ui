@@ -14,6 +14,10 @@ const eslintConfig = [
       'postcss.config.js',
       'next.config.js',
       'jest.config.js',
+      'playwright.config.ts',
+      'playwright-report/**',
+      'test-results/**',
+      'tests/**',
     ],
   },
   {

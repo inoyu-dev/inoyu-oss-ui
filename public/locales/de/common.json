@@ -446,5 +446,8 @@
   "Tenant is not available": "Mandant ist nicht verfügbar",
   "Some features may not work correctly. Please check your Unomi V3 configuration.": "Einige Funktionen funktionieren möglicherweise nicht korrekt. Bitte überprüfen Sie Ihre Unomi V3-Konfiguration.",
   "Configured tenant": "Konfigurierter Mandant",
-  "Checking permissions...": "Berechtigungen werden überprüft..."
+  "Checking permissions...": "Berechtigungen werden überprüft...",
+  "Checking plugin availability...": "Plugin-Verfügbarkeit wird geprüft...",
+  "Plugin unavailable": "Plugin nicht verfügbar",
+  "The {{plugin}} Unomi plugin is not installed or not responding on this server.": "The {{plugin}} Unomi plugin is not installed or not responding on this server."
 }

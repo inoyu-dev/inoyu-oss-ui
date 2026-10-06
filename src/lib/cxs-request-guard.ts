@@ -21,7 +21,7 @@ export function assertCxsRequestIsolation(req: NextApiRequest, endpoint: string)
   }
 }
 
-/** True when SaaS/hybrid Unomi 3.1+ must not fall back to karaf system credentials. */
+/** True when SaaS/hybrid Unomi 4.0+ must not fall back to karaf system credentials. */
 export function mustUseTenantUnomiCredentials(endpoint: string): boolean {
   if (isUnomiSystemEndpoint(endpoint)) {
     return false;

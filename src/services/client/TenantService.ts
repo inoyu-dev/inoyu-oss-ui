@@ -1,5 +1,5 @@
 /**
- * Client service for tenant management (Unomi 3.1+ on-prem).
+ * Client service for tenant management (Unomi 4.0+ on-prem).
  */
 
 import axios from 'axios';

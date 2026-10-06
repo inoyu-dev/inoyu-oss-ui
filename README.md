@@ -39,7 +39,7 @@ Defaults live in `src/config/env-defaults.ts` (`.env.example` documents the same
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `UNOMI_URL` / `NEXT_PUBLIC_UNOMI_URL` | `http://localhost:8181` | Unomi server URL |
-| `UNOMI_VERSION` | `3.1` | Tenant UI requires `3.1+` (`3` / `3.0` = no tenant UI) |
+| `UNOMI_VERSION` | `4.0` | Tenant UI requires `4.0+` (`3` / `3.0` = no tenant UI) |
 | `UNOMI_USER` / `UNOMI_PASSWORD` | `karaf` / `karaf` | Unomi system credentials |
 | `UNOMI_TENANT_ID` | — | Optional; omit for on-prem tenant admin bootstrap |
 | `JWT_SECRET` | — | Required for sessions (no default) |
@@ -51,8 +51,8 @@ Defaults live in `src/config/env-defaults.ts` (`.env.example` documents the same
 
 | | SaaS (`multi-tenant`) | On-premise |
 |--|----------------------|------------|
-| **Unomi &lt; 3.1** | No tenant UI | No tenant UI |
-| **Unomi >= 3.1** | Tenant from JWT only; no tenant UI | Create/switch tenants in UI + sidebar |
+| **Unomi &lt; 4.0** | No tenant UI | No tenant UI |
+| **Unomi >= 4.0** | Tenant from JWT only; no tenant UI | Create/switch tenants in UI + sidebar |
 
 ## Plugin System
 

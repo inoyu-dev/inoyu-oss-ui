@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { Save, Users, Code } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 import { UnomiSegment, createSegment, updateSegment } from '@/services/client/UnomiClientService';
 import { SegmentBasicInfo } from './SegmentBasicInfo';
 import { ConditionBuilder, type ConditionBuilderProps } from '@/components/conditions';
@@ -26,6 +27,7 @@ export interface SegmentBuilderProps {
 
 export default function SegmentBuilder({ segment, isOpen, onClose, onSave }: SegmentBuilderProps) {
   const { t } = useTranslation('common');
+  const { user } = useAuth();
   const ResolvedConditionBuilder = useRegisteredComponent<ConditionBuilderProps>(
     'conditions/ConditionBuilder',
     ConditionBuilder
@@ -71,13 +73,28 @@ export default function SegmentBuilder({ segment, isOpen, onClose, onSave }: Seg
     }
 
     try {
+      const scope =
+        segment?.metadata?.scope ||
+        user?.tenantId ||
+        (typeof window !== 'undefined'
+          ? localStorage.getItem('admin_tenant_context') || undefined
+          : undefined);
+      if (!scope) {
+        toast({
+          title: t('Missing Tenant'),
+          description: t('No tenant scope available. Select a tenant or open CDP from SaaS.'),
+          variant: 'destructive',
+        });
+        return;
+      }
+
       const segmentData = {
         metadata: {
           id: segment?.metadata?.id || `segment-${Date.now()}`,
           name: segmentName,
           description: segmentDescription,
           enabled: segmentEnabled,
-          scope: 'systemScope',
+          scope,
         },
         condition: rawCondition,
       };

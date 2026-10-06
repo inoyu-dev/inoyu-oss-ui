@@ -32,7 +32,7 @@ const nextConfig = {
     OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
     SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
     SLACK_CHANNEL_ID: process.env.SLACK_CHANNEL_ID,
-    UNOMI_URL: process.env.UNOMI_URL || 'http://localhost:8181',
+    // Do not bake UNOMI_URL — runtime k8s/env must win for server-side health/proxy.
     NEXT_PUBLIC_UNOMI_URL: process.env.NEXT_PUBLIC_UNOMI_URL || 'http://localhost:8181',
     FACEBOOK_APP_ID: process.env.FACEBOOK_APP_ID,
     FACEBOOK_APP_SECRET: process.env.FACEBOOK_APP_SECRET,
